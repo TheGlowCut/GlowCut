@@ -1,0 +1,457 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-on-surface font-body-md antialiased overflow-x-hidden;
+  }
+}
+
+/* ==========================================
+   THEME: Bright (default, no class needed)
+   GlowCut — warm cream surface, coral-orange primary,
+   soft violet secondary, mint-emerald tertiary.
+   ========================================== */
+:root {
+  /* Primary: vivid coral-orange (CTAs, brand accent) */
+  --color-primary: 230 90 50;
+  --color-on-primary: 255 255 255;
+  --color-primary-container: 255 94 58;
+  --color-on-primary-container: 255 255 255;
+  --color-primary-fixed: 255 224 212;
+  --color-primary-fixed-dim: 255 190 168;
+  --color-on-primary-fixed: 60 20 6;
+  --color-on-primary-fixed-variant: 180 60 20;
+  --color-inverse-primary: 255 150 115;
+
+  /* Secondary: soft violet */
+  --color-secondary: 124 90 220;
+  --color-on-secondary: 255 255 255;
+  --color-secondary-container: 130 100 235;
+  --color-on-secondary-container: 255 255 255;
+  --color-secondary-fixed: 230 220 255;
+  --color-secondary-fixed-dim: 200 182 255;
+  --color-on-secondary-fixed: 35 22 70;
+
+  /* Tertiary: mint-emerald (success / availability accents) */
+  --color-tertiary: 30 160 95;
+  --color-on-tertiary: 255 255 255;
+  --color-tertiary-container: 52 196 120;
+  --color-on-tertiary-container: 255 255 255;
+
+  /* Surfaces: warm cream/off-white */
+  --color-surface: 255 255 255;
+  --color-surface-dim: 246 239 234;
+  --color-surface-bright: 255 255 255;
+  --color-surface-container-lowest: 255 255 255;
+  --color-surface-container-low: 250 245 241;
+  --color-surface-container: 246 239 234;
+  --color-surface-container-high: 240 231 224;
+  --color-surface-container-highest: 233 221 212;
+  --color-on-surface: 38 28 24;
+  --color-on-surface-variant: 110 96 88;
+  --color-inverse-surface: 42 34 30;
+  --color-inverse-on-surface: 250 245 241;
+  --color-outline: 214 200 190;
+  --color-outline-variant: 230 220 212;
+  --color-background: 253 249 246;
+  --color-on-background: 38 28 24;
+  --color-surface-variant: 240 231 224;
+
+  /* Error: warm red */
+  --color-error: 214 60 60;
+  --color-on-error: 255 255 255;
+  --color-error-container: 255 220 216;
+  --color-on-error-container: 120 20 20;
+
+  /* Utility-specific variables */
+  --glass-bg: 255, 255, 255;
+  --glass-border: 230, 90, 50;
+  --scrollbar-track: #F5EDE8;
+  --scrollbar-thumb: #E65A32;
+  --scrollbar-thumb-hover: #FF7A4D;
+  /* Bright theme shadows - medium subtlety */
+  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-soft-lg: 0 8px 48px rgba(0, 0, 0, 0.12);
+  /* Hero overlay - matches warm background */
+  --hero-overlay: 253 249 246;
+}
+
+/* ==========================================
+   THEME: Dark (applied with .dark class)
+   GlowCut — near-black surface, glowing coral-orange
+   primary, violet secondary, mint-emerald tertiary.
+   ========================================== */
+.dark {
+  --color-primary: 255 140 105;
+  --color-on-primary: 20 8 4;
+  --color-primary-container: 255 94 58;
+  --color-on-primary-container: 255 255 255;
+  --color-primary-fixed: 255 214 199;
+  --color-primary-fixed-dim: 255 178 153;
+  --color-on-primary-fixed: 48 16 4;
+  --color-on-primary-fixed-variant: 255 150 115;
+  --color-inverse-primary: 230 90 50;
+
+  --color-secondary: 176 150 255;
+  --color-on-secondary: 20 12 40;
+  --color-secondary-container: 130 100 235;
+  --color-on-secondary-container: 255 255 255;
+  --color-secondary-fixed: 224 214 255;
+  --color-secondary-fixed-dim: 196 180 255;
+  --color-on-secondary-fixed: 30 20 60;
+
+  --color-tertiary: 110 224 160;
+  --color-on-tertiary: 6 30 18;
+  --color-tertiary-container: 52 196 120;
+  --color-on-tertiary-container: 255 255 255;
+
+  --color-surface: 20 18 24;
+  --color-surface-dim: 16 15 20;
+  --color-surface-bright: 44 40 50;
+  --color-surface-container-lowest: 13 12 16;
+  --color-surface-container-low: 24 22 28;
+  --color-surface-container: 28 26 33;
+  --color-surface-container-high: 36 33 42;
+  --color-surface-container-highest: 44 40 50;
+  --color-on-surface: 245 243 247;
+  --color-on-surface-variant: 168 163 176;
+  --color-inverse-surface: 245 243 247;
+  --color-inverse-on-surface: 28 26 33;
+  --color-outline: 92 87 100;
+  --color-outline-variant: 50 47 58;
+  --color-background: 13 12 16;
+  --color-on-background: 245 243 247;
+  --color-surface-variant: 36 33 42;
+
+  --color-error: 255 99 99;
+  --color-on-error: 20 4 4;
+  --color-error-container: 180 50 50;
+  --color-on-error-container: 255 255 255;
+
+  /* Utility-specific variables for dark */
+  --glass-bg: 24, 22, 28;
+  --glass-border: 255, 111, 74;
+  --scrollbar-track: #14121A;
+  --scrollbar-thumb: #FF6B4A;
+  --scrollbar-thumb-hover: #FF8F6B;
+  /* Dark mode shadows - more visible on dark bg */
+  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-soft-lg: 0 8px 56px rgba(0, 0, 0, 0.55);
+  /* Hero overlay - matches dark background */
+  --hero-overlay: 13 12 16;
+}
+
+@layer utilities {
+  .glass-panel {
+    background: rgba(var(--glass-bg), 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(var(--color-outline), 0.15);
+  }
+
+  .glass-card {
+    background: rgba(var(--glass-bg), 0.70);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(var(--color-outline), 0.12);
+  }
+
+  .glass-elevated {
+    background: rgba(var(--glass-bg), 0.90);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(var(--color-outline), 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .warm-overlay {
+    background: linear-gradient(180deg, rgba(var(--color-background), 0.4) 0%, rgba(var(--color-primary), 0.15) 100%);
+  }
+
+  .olive-glow {
+    box-shadow: 0 0 24px rgba(var(--color-primary), 0.25);
+  }
+
+  .cream-glow {
+    box-shadow: 0 0 24px rgba(var(--color-secondary), 0.3);
+  }
+
+  .text-gradient-olive {
+    background: linear-gradient(135deg, rgb(var(--color-primary-fixed-dim)) 0%, rgb(var(--color-primary)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(135deg, rgb(var(--color-on-primary-fixed-variant)) 0%, rgb(var(--color-primary)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300;
+    transform: translateY(0px);
+    box-shadow: 0 2px 12px rgba(var(--color-primary), 0.04);
+    border-color: rgba(var(--color-primary), 0.12);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(var(--color-primary), 0.10);
+    border-color: rgba(var(--color-primary), 0.25);
+  }
+
+  .animate-stagger {
+    animation: fade-in-up 0.6s ease-out both;
+  }
+
+  .animate-stagger:nth-child(1) { animation-delay: 0.05s; }
+  .animate-stagger:nth-child(2) { animation-delay: 0.1s; }
+  .animate-stagger:nth-child(3) { animation-delay: 0.15s; }
+  .animate-stagger:nth-child(4) { animation-delay: 0.2s; }
+  .animate-stagger:nth-child(5) { animation-delay: 0.25s; }
+  .animate-stagger:nth-child(6) { animation-delay: 0.3s; }
+
+  .olive-border-gradient {
+    border-image: linear-gradient(to bottom right, rgba(var(--color-primary), 0.4), rgba(var(--color-primary), 0)) 1;
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(90deg, transparent, rgba(var(--color-primary), 0.04), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .olive-dot-pattern {
+    background-image: radial-gradient(circle, rgba(var(--color-primary), 0.12) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .cream-dot-pattern {
+    background-image: radial-gradient(circle, rgba(var(--color-secondary), 0.4) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Hero overlay gradients - grey tint for light theme */
+  .hero-overlay-right {
+    background: linear-gradient(to right, rgb(var(--hero-overlay)), rgb(var(--hero-overlay) / 0.8), transparent);
+  }
+
+  .hero-overlay-up {
+    background: linear-gradient(to top, rgb(var(--hero-overlay)), transparent, rgb(var(--hero-overlay) / 0.3));
+  }
+}
+
+/* In bright theme, make invisible white borders visible using outline color */
+:root:not(.dark) [class*="border-white"] {
+  border-color: rgba(var(--color-outline), 0.2) !important;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-primary), 1);
+  border-radius: 10px;
+}
+
+/* Smooth transition when toggling themes */
+html, body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+  max-width: 100vw;
+}
+
+/* ========== Responsive Overrides ========== */
+
+@layer utilities {
+  /* Responsive container widths */
+  .responsive-container {
+    @apply w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop;
+  }
+
+  .responsive-px {
+    @apply px-margin-mobile md:px-margin-desktop;
+  }
+
+  .responsive-py {
+    @apply py-base md:py-md;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Safe area bottom for mobile */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Responsive text truncation */
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Full-width touch targets for mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Responsive grid helpers */
+  .auto-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md;
+  }
+
+  .auto-grid-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-md;
+  }
+
+  .auto-grid-3 {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md;
+  }
+
+  /* Responsive flex helpers */
+  .flex-wrap-responsive {
+    @apply flex flex-col sm:flex-row flex-wrap;
+  }
+
+  /* Mobile-first padding helper */
+  .section-padding {
+    @apply px-margin-mobile md:px-margin-desktop py-xl;
+  }
+
+  /* Responsive card grid */
+  .card-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter;
+  }
+}
+
+/* Better touch targets on mobile */
+@media (max-width: 768px) {
+  button, a, select, input[type="button"] {
+    @apply cursor-default;
+  }
+}
+
+/* Prevent horizontal scroll on all screen sizes */
+#root {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive table wrapper */
+.table-responsive {
+  @apply w-full overflow-x-auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Theme toggle button styles */
+.theme-toggle-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-on-primary));
+}
+
+@media (min-width: 768px) {
+  .theme-toggle-btn {
+    bottom: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(var(--color-primary), 0.4);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.theme-toggle-btn svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .theme-toggle-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.theme-toggle-btn:hover svg {
+  transform: rotate(30deg);
+}

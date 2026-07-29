@@ -1,0 +1,6 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M30 40 Q50 20 70 40 T70 80 Q50 90 30 80 T30 40" fill="none" stroke="#FF5F1F" stroke-width="4" />
+  <circle cx="50" cy="45" r="5" fill="#50C878" />
+  <path d="M40 70 L60 70" stroke="#50C878" stroke-width="3" stroke-linecap="round" />
+  <text x="50" y="95" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">GlowCut</text>
+</svg>
