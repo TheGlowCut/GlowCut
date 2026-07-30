@@ -201,9 +201,9 @@
 
 .salon-detail-content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) 370px;
+  grid-template-columns: minmax(0, 1fr) 430px;
   align-items: start;
-  gap: 84px;
+  gap: 60px;
   padding-top: 62px;
 }
 
@@ -423,52 +423,103 @@
   font-size: 11px;
 }
 
-.salon-detail-date-switch {
+.salon-detail-date-picker {
   display: flex;
-  gap: 7px;
+  gap: 4px;
   margin-top: 17px;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
-.salon-detail-date-switch button {
+.salon-detail-date-picker button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 50px;
+  gap: 2px;
   border: 0;
-  border-radius: 999px;
-  padding: 6px 13px;
+  border-radius: 12px;
+  padding: 10px 6px;
   background: #24272d;
   color: #a6a8ac;
   font-size: 9px;
   cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+  flex-shrink: 1;
+  border: 1px solid transparent;
 }
 
-.salon-detail-date-switch button.active {
+.salon-detail-date-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.salon-detail-date-picker button.active {
   background: rgba(226, 184, 94, 0.15);
+  color: var(--detail-gold);
+  border-color: var(--detail-gold);
+}
+
+.salon-detail-date-picker button.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.salon-detail-date-picker button:not(.disabled):not(.active):hover {
+  border-color: rgba(226, 184, 94, 0.4);
+  background: #2a2d34;
+}
+
+.salon-detail-date-number {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.salon-detail-date-picker button.active .salon-detail-date-number {
   color: var(--detail-gold);
 }
 
 .salon-detail-slots {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 7px;
   margin-top: 11px;
 }
 
 .salon-detail-slots button,
 .salon-detail-slots > i {
   position: relative;
-  min-height: 32px;
+  min-height: 34px;
   overflow: hidden;
   border: 1px solid #3b3e45;
-  border-radius: 999px;
+  border-radius: 10px;
   background: #272a30;
   color: #c1c2c3;
   font-size: 9px;
   font-style: normal;
   cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, opacity 180ms ease;
 }
 
 .salon-detail-slots button.selected {
   border-color: var(--detail-gold);
   background: var(--detail-gold);
   color: #16130d;
+}
+
+.salon-detail-slots button.unavailable {
+  opacity: 0.35;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.salon-detail-slots button:not(.unavailable):not(.selected):hover {
+  border-color: rgba(226, 184, 94, 0.4);
+  background: #2f323a;
 }
 
 .salon-detail-booking-price {
@@ -889,8 +940,8 @@
   }
 
   .salon-detail-content-grid {
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 35px;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 30px;
   }
 
   .salon-detail-meta > i {
