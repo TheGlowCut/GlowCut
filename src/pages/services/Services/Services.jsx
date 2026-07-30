@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -14,6 +14,8 @@ import {
 } from 'react-icons/md';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
 import * as salonService from '../../../services/salonService';
+import AuthContext from '../../../context/AuthContext';
+import Avatar from '../../../components/ui/Avatar';
 import landingHero from '../../../assets/home/landing-hero.png';
 import glowcutMark from '../../../assets/brand/glowcut-mark.png';
 import './Services.css';
@@ -23,6 +25,7 @@ const NAV_LINKS = [
   { label: 'Salon & Service', to: '/services' },
   { label: 'Stylists & Offers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
+  { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
 
 const FILTERS = [
@@ -37,17 +40,10 @@ const FILTERS = [
 
 const FOOTER_LINKS = {
   Company: [
-    { label: 'About Us', to: '/contact-us' },
-    { label: 'Careers', to: '/careers' },
     { label: 'Privacy Policy', to: '/privacy-policy' },
-    { label: 'Terms and Conditions', to: '/terms-of-service' },
-  ],
-  Features: [
-    { label: 'Online Booking', to: '/services' },
-    { label: 'Sales & Payments', to: '/rewards/glow' },
-    { label: 'Marketing & Automation', to: '/support/updates' },
-    { label: 'Reporting', to: '/profile' },
-    { label: 'Mini-CRM', to: '/profile' },
+    { label: 'Terms of Service', to: '/terms-of-service' },
+    { label: 'Contact Us', to: '/contact-us' },
+    { label: 'Careers', to: '/careers' },
   ],
 };
 
@@ -141,6 +137,7 @@ function SalonSkeleton() {
 
 export default function Services() {
   const navigate = useNavigate();
+  const { user, profile, userType } = useContext(AuthContext);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [salons, setSalons] = useState([]);
   const [catalogSalons, setCatalogSalons] = useState([]);
@@ -153,6 +150,8 @@ export default function Services() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [minimumRating, setMinimumRating] = useState(0);
+  const profileAvatar =
+    user?.profileImage || user?.avatar || profile?.profileImage || profile?.avatar;
 
   const fetchCatalog = useCallback(async () => {
     setLoading(true);
@@ -298,12 +297,21 @@ export default function Services() {
             ))}
           </nav>
 
-          <GoldButton
-            className="services-header-cta"
-            onClick={() => navigate('/salons/nearby')}
-          >
-            Book Now
-          </GoldButton>
+          <div className="services-header-actions">
+            <GoldButton
+              className="services-header-cta"
+              onClick={() => navigate('/salons/nearby')}
+            >
+              Book Now
+            </GoldButton>
+            <button type="button" className="services-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
+              <MdSearch />
+            </button>
+            {userType === 'authenticated' && (                <button type="button" className="services-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
+                <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="services-profile-avatar" />
+              </button>
+            )}
+          </div>
 
           <button
             type="button"
@@ -517,7 +525,6 @@ export default function Services() {
                     <div className="services-card-copy">
                       <div className="services-card-title">
                         <h2>{salon.name || 'GlowCut Partner Salon'}</h2>
-                        <strong>{salon.priceTier || '$$$'}</strong>
                       </div>
                       <p>
                         <MdLocationOn />
