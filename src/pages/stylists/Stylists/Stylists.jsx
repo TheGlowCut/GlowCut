@@ -80,6 +80,17 @@ const getExperience = (stylist) => {
 const getProfileImage = (stylist) =>
   stylist?.profileImage || stylist?.image || stylist?.avatar || '';
 
+const NAME_OVERRIDES = {
+  'Muhammad Ayan': 'Rossy',
+  'Muhammad': 'Rossy',
+  'Ayan': 'Rossy',
+};
+
+const getDisplayName = (stylist) => {
+  const original = stylist?.name || '';
+  return NAME_OVERRIDES[original] || original || 'GlowCut Specialist';
+};
+
 const getBadge = (stylist) => {
   const rating = getRating(stylist);
   const experience = getExperience(stylist);
@@ -143,6 +154,15 @@ function StylistPhoto({ stylist, index }) {
     </div>
   );
 }
+
+const GRID_CLASSES = [
+  'masonry-item--hero',
+  'masonry-item--sm-top',
+  'masonry-item--lg-btm',
+  'masonry-item--side-a',
+  'masonry-item--side-b',
+  'masonry-item--side-c',
+];
 
 function StylistSkeleton() {
   return (
@@ -220,6 +240,18 @@ export default function Stylists() {
         return availabilityDelta || getRating(b) - getRating(a);
       }),
     [stylists],
+  );
+
+  const masonryItems = useMemo(
+    () =>
+      orderedStylists.slice(0, 6).map((stylist, index) => ({
+        id: getEntityId(stylist) || `masonry-${index}`,
+        name: getDisplayName(stylist),
+        role: getSpecialty(stylist),
+        image: getProfileImage(stylist) || leadStylistImage,
+        gridClass: GRID_CLASSES[index] || 'masonry-item--side-c',
+      })),
+    [orderedStylists],
   );
 
   const handleView = (stylist) => {
@@ -333,6 +365,51 @@ export default function Stylists() {
           <p>Verified professionals across cutting, color, skincare, and beauty.</p>
         </section>
 
+        {/* ─── Pinterest Masonry Grid ─── */}
+        <section className="masonry-section">
+          <div className="masonry-heading">
+            <div className="stylists-eyebrow">
+              <i />
+              Top Creators
+            </div>
+            <h2>
+              Meet our <span>Barbers</span>
+            </h2>
+            <p>Handpicked masters of the craft.</p>
+          </div>
+
+          <div className="masonry-grid">
+            {loading
+              ? Array.from({ length: 6 }, (_, i) => (
+                  <div key={`skel-${i}`} className={`masonry-card ${GRID_CLASSES[i] || 'masonry-item--side-c'} masonry-skeleton`}>
+                    <div className="masonry-card-img" />
+                  </div>
+                ))
+              : masonryItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    className={`masonry-card ${item.gridClass}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.07, ease: 'easeOut' }}
+                  >
+                    <div className="masonry-card-img">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        loading={index < 3 ? 'eager' : 'lazy'}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    </div>
+                    <div className="masonry-card-overlay">
+                      <strong>{item.name}</strong>
+                      <span>{item.role}</span>
+                    </div>
+                  </motion.div>
+                ))}
+          </div>
+        </section>
+
         <section className="stylists-results" aria-live="polite">
           {loading ? (
             <div className="stylists-grid">
@@ -391,7 +468,7 @@ export default function Stylists() {
                     </span>
 
                     <div className="stylists-card-copy">
-                      <h2>{stylist.name || 'GlowCut Specialist'}</h2>
+                      <h2>{getDisplayName(stylist)}</h2>
                       <p>
                         {getSpecialty(stylist)}
                         {experience > 0 && <span> · {experience}y</span>}
