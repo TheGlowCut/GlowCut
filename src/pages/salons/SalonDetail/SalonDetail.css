@@ -102,6 +102,67 @@
   min-width: 126px;
 }
 
+.salon-detail-header-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 12px;
+}
+
+.salon-detail-header-search {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid rgba(226, 184, 94, 0.45);
+  border-radius: 50%;
+  background: #11151d;
+  color: #faf7ef;
+  cursor: pointer;
+  transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.salon-detail-header-search:hover {
+  border-color: var(--detail-gold);
+  color: var(--detail-gold);
+  transform: translateY(-2px);
+}
+
+.salon-detail-header-profile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 180ms ease;
+}
+
+.salon-detail-header-profile:hover {
+  transform: translateY(-2px);
+}
+
+.salon-detail-profile-avatar {
+  width: 42px !important;
+  height: 42px !important;
+  overflow: hidden;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.salon-detail-profile-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  border: none !important;
+  display: block !important;
+}
+
 .salon-detail-menu-button,
 .salon-detail-menu-backdrop,
 .salon-detail-mobile-menu {
@@ -851,6 +912,11 @@
   .salon-detail-nav,
   .salon-detail-book-button.header-cta {
     display: none;
+  }
+
+  .salon-detail-header-actions {
+    margin-left: auto;
+    margin-right: 12px;
   }
 
   .salon-detail-menu-button {

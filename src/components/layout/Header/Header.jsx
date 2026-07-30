@@ -21,16 +21,19 @@ const GUEST_NAV = [
   { label: 'Services', to: '/services' },
   { label: 'Stylists & Offers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant', guestWarning: true },
+  { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
-  const { userType, profile, logout } = useContext(AuthContext);
+  const { userType, user, profile, logout } = useContext(AuthContext);
 
   const isAuthenticated = userType === 'authenticated';
   const isGuest = userType === 'guest';
   const isAdmin = profile?.role?.toLowerCase() === 'admin';
+  const profileAvatar =
+    user?.profileImage || user?.avatar || profile?.profileImage || profile?.avatar;
 
   let navLinks = isAuthenticated ? [...AUTH_NAV] : [...GUEST_NAV];
   if (isAuthenticated && isAdmin) {
@@ -95,10 +98,9 @@ export default function Header() {
             aria-label="Profile"
           >
             <Avatar
-              src={profile?.avatar}
+              src={profileAvatar}
               alt={profile?.name || 'Profile'}
               size="sm"
-              ring
               className="group-hover:shadow-warm transition-all"
             />
           </button>
@@ -225,7 +227,6 @@ export function AdminHeader({ title = 'Dashboard', avatarSrc, unreadChat = false
               src={imageSource}
               size="sm"
               alt={profile?.name || 'Admin Avatar'}
-              ring
               className="group-hover:scale-105 group-hover:shadow-warm transition-all cursor-pointer"
             />
           </button>

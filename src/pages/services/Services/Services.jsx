@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -10,44 +10,49 @@ import {
   MdRefresh,
   MdSearch,
   MdStar,
-  MdTune,
+  MdAccessTime,
+  MdStore,
+  MdSpa,
+  MdContentCut as MdScissors,
+  MdPalette,
+  MdDry,
+  MdBrush,
+  MdPerson,
 } from 'react-icons/md';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
 import * as salonService from '../../../services/salonService';
+import AuthContext from '../../../context/AuthContext';
+import Avatar from '../../../components/ui/Avatar';
 import landingHero from '../../../assets/home/landing-hero.png';
 import glowcutMark from '../../../assets/brand/glowcut-mark.png';
 import './Services.css';
+
+// ─── Constants ─────────────────────────────────────────────
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
   { label: 'Salon & Service', to: '/services' },
   { label: 'Stylists & Offers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
+  { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
 
-const FILTERS = [
-  { label: 'All', key: 'all' },
-  { label: 'Hair', key: 'hair', terms: ['hair', 'haircut', 'styling'] },
-  { label: 'Color', key: 'color', terms: ['color', 'colour', 'dye'] },
-  { label: 'Spa & Skin', key: 'spa', terms: ['spa', 'skin', 'facial'] },
-  { label: 'Nails', key: 'nails', terms: ['nail', 'manicure', 'pedicure'] },
-  { label: 'Barber', key: 'barber', terms: ['barber', 'beard', 'grooming'] },
-  { label: 'Open Now', key: 'open' },
+const SERVICE_CATEGORIES = [
+  { key: 'all', label: 'All Services', icon: MdContentCut },
+  { key: 'haircuts', label: 'Haircuts', icon: MdScissors, terms: ['haircut', 'cut', 'trim', 'fade', 'buzz', 'taper'] },
+  { key: 'grooming', label: 'Grooming', icon: MdPerson, terms: ['grooming', 'beard', 'shave', 'moustache', 'facial hair'] },
+  { key: 'color', label: 'Color', icon: MdPalette, terms: ['color', 'colour', 'dye', 'bleach', 'highlight', 'balayage', 'toner'] },
+  { key: 'spa', label: 'Spa', icon: MdSpa, terms: ['spa', 'facial', 'mask', 'steam', 'scrub', 'massage', 'cleanse'] },
+  { key: 'styling', label: 'Styling', icon: MdBrush, terms: ['styling', 'blow-dry', 'blow dry', 'straighten', 'curl', 'perm', 'updo'] },
+  { key: 'treatment', label: 'Treatments', icon: MdDry, terms: ['treatment', 'keratin', 'botox', 'repair', 'deep condition', 'scalp'] },
 ];
 
 const FOOTER_LINKS = {
   Company: [
-    { label: 'About Us', to: '/contact-us' },
-    { label: 'Careers', to: '/careers' },
     { label: 'Privacy Policy', to: '/privacy-policy' },
-    { label: 'Terms and Conditions', to: '/terms-of-service' },
-  ],
-  Features: [
-    { label: 'Online Booking', to: '/services' },
-    { label: 'Sales & Payments', to: '/rewards/glow' },
-    { label: 'Marketing & Automation', to: '/support/updates' },
-    { label: 'Reporting', to: '/profile' },
-    { label: 'Mini-CRM', to: '/profile' },
+    { label: 'Terms of Service', to: '/terms-of-service' },
+    { label: 'Contact Us', to: '/contact-us' },
+    { label: 'Careers', to: '/careers' },
   ],
 };
 
@@ -58,14 +63,9 @@ const SOCIAL_LINKS = [
   { label: 'LinkedIn', icon: FaLinkedinIn },
 ];
 
-const getEntityId = (entity) => entity?._id || entity?.id || '';
+// ─── Helpers ───────────────────────────────────────────────
 
-const getServiceSalonId = (service) =>
-  getEntityId(service?.salon) ||
-  getEntityId(service?.salonId) ||
-  service?.salon ||
-  service?.salonId ||
-  '';
+const getEntityId = (entity) => entity?._id || entity?.id || '';
 
 const getSalonImage = (salon) =>
   salon?.coverImage || salon?.coverPhoto || salon?.logo || salon?.image || landingHero;
@@ -78,31 +78,30 @@ const getSalonRating = (salon) => {
 const getSalonLocation = (salon) => {
   const address = salon?.address;
   if (typeof address === 'string' && address.trim()) return address;
-
-  const parts = [
-    address?.area,
-    address?.city,
-    salon?.area,
-    salon?.city,
-    salon?.location,
-  ].filter(Boolean);
-
+  const parts = [address?.area, address?.city, salon?.area, salon?.city, salon?.location].filter(Boolean);
   return [...new Set(parts)].slice(0, 2).join(', ') || 'Location not provided';
 };
 
 const isSalonOpen = (salon) => {
   if (typeof salon?.isOpen === 'boolean') return salon.isOpen;
   if (typeof salon?.openNow === 'boolean') return salon.openNow;
-
   const status = String(salon?.status || salon?.availability || '').toLowerCase();
   if (['closed', 'inactive', 'suspended', 'unavailable'].includes(status)) return false;
   if (['open', 'active', 'approved', 'available'].includes(status)) return true;
-
   return true;
 };
 
+const getServiceSalonId = (service) =>
+  getEntityId(service?.salon) ||
+  getEntityId(service?.salonId) ||
+  service?.salon ||
+  service?.salonId ||
+  '';
+
 const serviceSearchText = (service) =>
-  `${service?.name || ''} ${service?.category || ''}`.toLowerCase();
+  `${service?.name || ''} ${service?.category || ''} ${service?.description || ''}`.toLowerCase();
+
+// ─── Sub-components ────────────────────────────────────────
 
 function Brand() {
   return (
@@ -139,20 +138,21 @@ function SalonSkeleton() {
   );
 }
 
+// ─── Main Component ────────────────────────────────────────
+
 export default function Services() {
   const navigate = useNavigate();
+  const { user, profile, userType } = useContext(AuthContext);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [salons, setSalons] = useState([]);
-  const [catalogSalons, setCatalogSalons] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searching, setSearching] = useState(false);
   const [error, setError] = useState('');
-  const [query, setQuery] = useState('');
-  const [location, setLocation] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [minimumRating, setMinimumRating] = useState(0);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const profileAvatar =
+    user?.profileImage || user?.avatar || profile?.profileImage || profile?.avatar;
+
+  // ── Fetch data ──
 
   const fetchCatalog = useCallback(async () => {
     setLoading(true);
@@ -164,9 +164,7 @@ export default function Services() {
     ]);
 
     if (salonResult.status === 'fulfilled') {
-      const nextSalons = Array.isArray(salonResult.value) ? salonResult.value : [];
-      setSalons(nextSalons);
-      setCatalogSalons(nextSalons);
+      setSalons(Array.isArray(salonResult.value) ? salonResult.value : []);
     } else {
       setSalons([]);
       setError('We could not load salons right now. Please try again.');
@@ -185,9 +183,10 @@ export default function Services() {
     fetchCatalog();
   }, [fetchCatalog]);
 
+  // ── Data derived state ──
+
   const servicesBySalon = useMemo(() => {
     const map = new Map();
-
     services.forEach((service) => {
       const salonId = String(getServiceSalonId(service));
       if (!salonId) return;
@@ -195,78 +194,28 @@ export default function Services() {
       current.push(service);
       map.set(salonId, current);
     });
-
     return map;
   }, [services]);
 
-  const runSearch = async (event) => {
-    event?.preventDefault();
-    setSearching(true);
-    setError('');
+  const filteredServices = useMemo(() => {
+    if (activeCategory === 'all') return services;
+    const category = SERVICE_CATEGORIES.find((c) => c.key === activeCategory);
+    if (!category) return services;
+    return services.filter((service) =>
+      category.terms.some((term) => serviceSearchText(service).includes(term))
+    );
+  }, [services, activeCategory]);
 
-    try {
-      let result;
-      const cleanQuery = query.trim();
-      const cleanLocation = location.trim();
-
-      if (cleanQuery) {
-        const salonMatches = await salonService.searchSalons(cleanQuery);
-        const serviceSalonIds = new Set(
-          services
-            .filter((service) => serviceSearchText(service).includes(cleanQuery.toLowerCase()))
-            .map((service) => String(getServiceSalonId(service)))
-            .filter(Boolean),
-        );
-        const serviceMatches = catalogSalons.filter((salon) =>
-          serviceSalonIds.has(String(getEntityId(salon))),
-        );
-        const merged = new Map();
-        [...(Array.isArray(salonMatches) ? salonMatches : []), ...serviceMatches].forEach(
-          (salon) => {
-            const key = String(getEntityId(salon) || salon.name);
-            merged.set(key, salon);
-          },
-        );
-        result = [...merged.values()];
-      } else if (cleanLocation) {
-        result = await salonService.getSalonsByCity(cleanLocation);
-      } else {
-        result = await salonService.getSalons({ limit: 60 });
-      }
-
-      let nextSalons = Array.isArray(result) ? result : [];
-      if (cleanQuery && cleanLocation) {
-        const locationNeedle = cleanLocation.toLowerCase();
-        nextSalons = nextSalons.filter((salon) =>
-          getSalonLocation(salon).toLowerCase().includes(locationNeedle),
-        );
-      }
-
-      setSalons(nextSalons);
-    } catch {
-      setSalons([]);
-      setError('Search could not be completed. Please check your connection and retry.');
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const visibleSalons = useMemo(() => {
-    const filter = FILTERS.find((item) => item.key === activeFilter);
-
+  const salonsWithServices = useMemo(() => {
+    const salonHasServices = new Set();
+    services.forEach((service) => {
+      const salonId = String(getServiceSalonId(service));
+      if (salonId) salonHasServices.add(salonId);
+    });
     return salons
-      .filter((salon) => getSalonRating(salon) >= minimumRating)
-      .filter((salon) => {
-        if (!filter || filter.key === 'all') return true;
-        if (filter.key === 'open') return isSalonOpen(salon);
-
-        const salonServices = servicesBySalon.get(String(getEntityId(salon))) || [];
-        return salonServices.some((service) =>
-          filter.terms.some((term) => serviceSearchText(service).includes(term)),
-        );
-      })
+      .filter((salon) => salonHasServices.has(String(getEntityId(salon))))
       .sort((a, b) => getSalonRating(b) - getSalonRating(a));
-  }, [activeFilter, minimumRating, salons, servicesBySalon]);
+  }, [salons, services]);
 
   const getSalonTags = (salon) => {
     const salonServices = servicesBySalon.get(String(getEntityId(salon))) || [];
@@ -276,16 +225,41 @@ export default function Services() {
       .map((label) => String(label).trim())
       .filter((label, index, array) => array.indexOf(label) === index)
       .slice(0, 3);
-
     return labels.length > 0 ? labels : ['Salon'];
   };
+
+  const getSalonNameForService = (service) => {
+    const salonId = String(getServiceSalonId(service));
+    const salon = salons.find((s) => String(getEntityId(s)) === salonId);
+    return salon?.name || 'GlowCut Partner';
+  };
+
+  const getSalonIdForService = (service) => {
+    const salonId = String(getServiceSalonId(service));
+    return salonId;
+  };
+
+  const formatPrice = (price) => {
+    const num = Number(price || 0);
+    return `Rs ${num.toLocaleString()}`;
+  };
+
+  const formatDuration = (minutes) => {
+    const mins = Number(minutes || 0);
+    if (mins < 60) return `${mins} min`;
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    return rem ? `${hrs}h ${rem}m` : `${hrs}h`;
+  };
+
+  // ── Render ──
 
   return (
     <main className="services-page">
       <div className="services-shell">
+        {/* ── Header ── */}
         <header className="services-header">
           <Brand />
-
           <nav className="services-nav" aria-label="Main navigation">
             {NAV_LINKS.map((item) => (
               <Link
@@ -297,14 +271,19 @@ export default function Services() {
               </Link>
             ))}
           </nav>
-
-          <GoldButton
-            className="services-header-cta"
-            onClick={() => navigate('/salons/nearby')}
-          >
-            Book Now
-          </GoldButton>
-
+          <div className="services-header-actions">
+            <GoldButton className="services-header-cta" onClick={() => navigate('/salons/nearby')}>
+              Book Now
+            </GoldButton>
+            <button type="button" className="services-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
+              <MdSearch />
+            </button>
+            {userType === 'authenticated' && (
+              <button type="button" className="services-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
+                <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="services-profile-avatar" />
+              </button>
+            )}
+          </div>
           <button
             type="button"
             className="services-menu-button"
@@ -315,6 +294,7 @@ export default function Services() {
           </button>
         </header>
 
+        {/* ── Mobile Menu ── */}
         <AnimatePresence>
           {mobileOpen && (
             <>
@@ -335,11 +315,7 @@ export default function Services() {
               >
                 <div>
                   <Brand />
-                  <button
-                    type="button"
-                    aria-label="Close navigation"
-                    onClick={() => setMobileOpen(false)}
-                  >
+                  <button type="button" aria-label="Close navigation" onClick={() => setMobileOpen(false)}>
                     <MdClose />
                   </button>
                 </div>
@@ -361,195 +337,266 @@ export default function Services() {
           )}
         </AnimatePresence>
 
+        {/* ── Hero / Intro ── */}
         <section className="services-intro">
           <div className="services-eyebrow">
             <i />
             Discover
           </div>
           <h1>
-            Find your next <span>Favorite Salon</span>
+            Explore <span>Salon & Services</span>
           </h1>
           <p>
-            Curated luxury salons and independent stylists - filter by service, distance, and vibe.
+            Browse our curated partner salons and explore services tailored just for you.
           </p>
-
-          <form className="services-search-bar" onSubmit={runSearch}>
-            <label className="services-query-input">
-              <MdSearch />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search salons, services..."
-                aria-label="Search salons and services"
-              />
-            </label>
-            <label className="services-location-input">
-              <MdLocationOn />
-              <input
-                value={location}
-                onChange={(event) => setLocation(event.target.value)}
-                placeholder="Location"
-                aria-label="Location"
-              />
-            </label>
-            <button
-              type="button"
-              className={filtersOpen ? 'services-filter-button active' : 'services-filter-button'}
-              onClick={() => setFiltersOpen((current) => !current)}
-            >
-              <MdTune />
-              Filters
-            </button>
-            <button type="submit" className="services-search-button" disabled={searching}>
-              {searching ? 'Searching...' : 'Search'}
-              {!searching && <MdArrowForward />}
-            </button>
-          </form>
-
-          <AnimatePresence>
-            {filtersOpen && (
-              <motion.div
-                className="services-advanced-filters"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <span>Minimum rating</span>
-                {[0, 4, 4.5].map((rating) => (
-                  <button
-                    type="button"
-                    key={rating}
-                    className={minimumRating === rating ? 'active' : ''}
-                    onClick={() => setMinimumRating(rating)}
-                  >
-                    {rating === 0 ? 'Any rating' : `${rating}+`}
-                  </button>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="services-filter-chips">
-            {FILTERS.map((filter) => (
-              <button
-                type="button"
-                key={filter.key}
-                className={activeFilter === filter.key ? 'active' : ''}
-                onClick={() => setActiveFilter(filter.key)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
         </section>
 
-        <section className="services-results" aria-live="polite">
-          {loading ? (
+        {/* ── Loading / Error ── */}
+        {loading ? (
+          <section className="services-loading-section">
             <div className="services-salon-grid">
-              {Array.from({ length: 6 }, (_, index) => (
-                <SalonSkeleton key={index} />
+              {Array.from({ length: 6 }, (_, i) => (
+                <SalonSkeleton key={i} />
               ))}
             </div>
-          ) : error ? (
-            <div className="services-state-card">
-              <MdRefresh />
-              <h2>Salons could not be loaded</h2>
-              <p>{error}</p>
-              <GoldButton onClick={fetchCatalog}>Try Again</GoldButton>
-            </div>
-          ) : visibleSalons.length === 0 ? (
-            <div className="services-state-card">
-              <MdContentCut />
-              <h2>No matching salons found</h2>
-              <p>Try a different service, location, or rating filter.</p>
-              <button
-                type="button"
-                className="services-clear-button"
-                onClick={() => {
-                  setActiveFilter('all');
-                  setMinimumRating(0);
-                  setQuery('');
-                  setLocation('');
-                  fetchCatalog();
-                }}
-              >
-                Clear filters
-              </button>
-            </div>
-          ) : (
-            <motion.div
-              className="services-salon-grid"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: {},
-                visible: { transition: { staggerChildren: 0.055 } },
-              }}
-            >
-              {visibleSalons.map((salon) => {
-                const salonId = getEntityId(salon);
-                const rating = getSalonRating(salon);
-                const open = isSalonOpen(salon);
+          </section>
+        ) : error ? (
+          <section className="services-state-card">
+            <MdRefresh />
+            <h2>Salons could not be loaded</h2>
+            <p>{error}</p>
+            <GoldButton onClick={fetchCatalog}>Try Again</GoldButton>
+          </section>
+        ) : (
+          <>
+            {/* ════════════════════════════════════════════════
+                SECTION 1: PARTNER SALONS
+               ════════════════════════════════════════════════ */}
+            <section className="services-salons-section" id="services-salons">
+              <div className="services-section-header">
+                <div>
+                  <div className="services-eyebrow">
+                    <i />
+                    Partner Salons
+                  </div>
+                  <h2>
+                    Premium <span>Grooming Spots</span>
+                  </h2>
+                </div>
+                <div className="services-section-meta">
+                  <span className="services-count-badge">{salonsWithServices.length} Salons</span>
+                  <p>
+                    Hand-picked partner salons ready to serve you with top-notch quality and style.
+                  </p>
+                </div>
+              </div>
 
-                return (
-                  <motion.article
-                    className="services-salon-card"
-                    key={salonId || salon.name}
-                    variants={{
-                      hidden: { opacity: 0, y: 14 },
-                      visible: { opacity: 1, y: 0 },
-                    }}
-                  >
-                    <div className="services-card-image">
-                      <img
-                        src={getSalonImage(salon)}
-                        alt={`${salon.name || 'Salon'} interior`}
-                        onError={(event) => {
-                          event.currentTarget.src = landingHero;
+              {salonsWithServices.length === 0 ? (
+                <div className="services-state-card services-state-card-sm">
+                  <MdStore />
+                  <h2>No partner salons yet</h2>
+                  <p>Check back soon as new premium salons join Glow&Cut.</p>
+                </div>
+              ) : (
+                <motion.div
+                  className="services-salon-grid"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: {},
+                    visible: { transition: { staggerChildren: 0.055 } },
+                  }}
+                >
+                  {salonsWithServices.map((salon) => {
+                    const salonId = getEntityId(salon);
+                    const rating = getSalonRating(salon);
+                    const open = isSalonOpen(salon);
+
+                    return (
+                      <motion.article
+                        className="services-salon-card"
+                        key={salonId || salon.name}
+                        variants={{
+                          hidden: { opacity: 0, y: 20 },
+                          visible: { opacity: 1, y: 0 },
                         }}
-                      />
-                      <span>
-                        <MdStar />
-                        {rating > 0 ? rating.toFixed(1) : 'New'}
-                      </span>
-                    </div>
+                      >
+                        <div className="services-card-image">
+                          <img
+                            src={getSalonImage(salon)}
+                            alt={`${salon.name || 'Salon'} interior`}
+                            onError={(e) => { e.currentTarget.src = landingHero; }}
+                          />
+                          <span className="services-card-rating-badge">
+                            <MdStar />
+                            {rating > 0 ? rating.toFixed(1) : 'New'}
+                          </span>
+                          <span className={`services-card-status ${open ? 'open' : 'closed'}`}>
+                            <i />
+                            {open ? 'Open' : 'Closed'}
+                          </span>
+                        </div>
 
-                    <div className="services-card-copy">
-                      <div className="services-card-title">
-                        <h2>{salon.name || 'GlowCut Partner Salon'}</h2>
-                        <strong>{salon.priceTier || '$$$'}</strong>
-                      </div>
-                      <p>
-                        <MdLocationOn />
-                        {getSalonLocation(salon)}
-                      </p>
-                      <div className="services-card-tags">
-                        {getSalonTags(salon).map((tag) => (
-                          <span key={tag}>{tag}</span>
-                        ))}
-                      </div>
-                      <div className="services-card-actions">
-                        <small className={open ? 'open' : 'closed'}>
-                          <i />
-                          {open ? 'Open' : 'Closed'}
-                        </small>
-                        <GoldButton
+                        <div className="services-card-copy">
+                          <div className="services-card-title">
+                            <h3>{salon.name || 'GlowCut Partner Salon'}</h3>
+                          </div>
+                          <p className="services-card-location">
+                            <MdLocationOn />
+                            {getSalonLocation(salon)}
+                          </p>
+                          <div className="services-card-tags">
+                            {getSalonTags(salon).map((tag) => (
+                              <span key={tag}>{tag}</span>
+                            ))}
+                          </div>
+                          <div className="services-card-actions">
+                            <div className="services-card-meta">
+                              <small>
+                                <MdContentCut />
+                                {servicesBySalon.get(salonId)?.length || 0} services
+                              </small>
+                            </div>
+                            <GoldButton
+                              onClick={() =>
+                                navigate(salonId ? `/salons/${salonId}` : '/salons/nearby')
+                              }
+                            >
+                              View Salon
+                            </GoldButton>
+                          </div>
+                        </div>
+                      </motion.article>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </section>
+
+            {/* ════════════════════════════════════════════════
+                SECTION 2: SERVICES BY CATEGORY
+               ════════════════════════════════════════════════ */}
+            <section className="services-services-section" id="services-services">
+              <div className="services-section-header">
+                <div>
+                  <div className="services-eyebrow">
+                    <i />
+                    Browse Services
+                  </div>
+                  <h2>
+                    Find Your <span>Perfect Style</span>
+                  </h2>
+                </div>
+                <div className="services-section-meta">
+                  <span className="services-count-badge">{filteredServices.length} Services</span>
+                  <p>
+                    Explore services by category — from classic cuts to luxury spa treatments.
+                  </p>
+                </div>
+              </div>
+
+              {/* Category Tabs */}
+              <div className="services-category-tabs">
+                {SERVICE_CATEGORIES.map((cat) => {
+                  const isActive = activeCategory === cat.key;
+                  const Icon = cat.icon;
+                  return (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      className={`services-category-tab ${isActive ? 'active' : ''}`}
+                      onClick={() => setActiveCategory(cat.key)}
+                    >
+                      <span className="services-category-icon">
+                        <Icon />
+                      </span>
+                      <span className="services-category-label">{cat.label}</span>
+                      {isActive && <motion.span className="services-category-indicator" layoutId="categoryIndicator" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Services Grid */}
+              {filteredServices.length === 0 ? (
+                <div className="services-state-card services-state-card-sm">
+                  <MdContentCut />
+                  <h2>No services found</h2>
+                  <p>No services match this category. Try another category above.</p>
+                </div>
+              ) : (
+                <motion.div
+                  className="services-service-grid"
+                  key={activeCategory}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {filteredServices.map((service, index) => {
+                    const serviceId = getEntityId(service);
+                    const salonName = getSalonNameForService(service);
+                    const salonId = getSalonIdForService(service);
+                    const activeCat = SERVICE_CATEGORIES.find(c => c.key === activeCategory);
+                    const CatIcon = activeCat?.icon || MdContentCut;
+
+                    return (
+                      <motion.div
+                        className="services-service-card"
+                        key={serviceId || index}
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.25 }}
+                      >
+                        <div className="services-service-card-top">
+                          <div className="services-service-icon">
+                            <CatIcon />
+                          </div>
+                          <div className="services-service-info">
+                            <h4>{service.name}</h4>
+                            <span className="services-service-salon">
+                              <MdStore />
+                              {salonName}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="services-service-details">
+                          <div className="services-service-detail-item">
+                            <span className="services-detail-label">Price</span>
+                            <strong className="services-detail-value price">
+                              {formatPrice(service.price)}
+                            </strong>
+                          </div>
+                          <div className="services-service-detail-item">
+                            <span className="services-detail-label">Duration</span>
+                            <strong className="services-detail-value">
+                              <MdAccessTime />
+                              {formatDuration(service.duration)}
+                            </strong>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="services-view-salon-btn"
                           onClick={() =>
                             navigate(salonId ? `/salons/${salonId}` : '/salons/nearby')
                           }
                         >
-                          View
-                        </GoldButton>
-                      </div>
-                    </div>
-                  </motion.article>
-                );
-              })}
-            </motion.div>
-          )}
-        </section>
+                          View Salon
+                          <MdArrowForward />
+                        </button>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </section>
+          </>
+        )}
       </div>
 
+      {/* ── Footer ── */}
       <footer className="services-footer">
         <div className="services-shell">
           <div className="services-footer-grid">
@@ -568,7 +615,6 @@ export default function Services() {
               </div>
             ))}
           </div>
-
           <div className="services-footer-bottom">
             <Brand />
             <div className="services-socials">
