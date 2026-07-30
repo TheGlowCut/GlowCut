@@ -12,12 +12,14 @@ import {
   MdLocationOn,
   MdMenu,
   MdPhone,
+  MdSearch,
   MdShare,
   MdStar,
 } from 'react-icons/md';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
 import toast from 'react-hot-toast';
 import AuthContext from '../../../context/AuthContext';
+import Avatar from '../../../components/ui/Avatar';
 import GuestBlock from '../../../components/auth/GuestBlock';
 import Loader from '../../../components/ui/Loader';
 import { useSalon } from '../../../hooks/useSalon';
@@ -35,21 +37,15 @@ const NAV_LINKS = [
   { label: 'Salon & Service', to: '/services' },
   { label: 'Stylists & Offers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
+  { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
 
 const FOOTER_LINKS = {
   Company: [
-    { label: 'About Us', to: '/contact-us' },
-    { label: 'Careers', to: '/careers' },
     { label: 'Privacy Policy', to: '/privacy-policy' },
-    { label: 'Terms and Conditions', to: '/terms-of-service' },
-  ],
-  Features: [
-    { label: 'Online Booking', to: '/services' },
-    { label: 'Sales & Payments', to: '/rewards/glow' },
-    { label: 'Marketing & Automation', to: '/support/updates' },
-    { label: 'Reporting', to: '/profile' },
-    { label: 'Mini-CRM', to: '/profile' },
+    { label: 'Terms of Service', to: '/terms-of-service' },
+    { label: 'Contact Us', to: '/contact-us' },
+    { label: 'Careers', to: '/careers' },
   ],
 };
 
@@ -170,7 +166,7 @@ function Footer() {
 export default function SalonDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { userType } = useContext(AuthContext);
+  const { user, profile, userType } = useContext(AuthContext);
   const { salon, isLoading, error } = useSalon(id);
   const { booking, setSalon, toggleService, setStylist, setTimeSlot, totalPrice } = useBooking();
 
@@ -188,6 +184,8 @@ export default function SalonDetail() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [guestBlockOpen, setGuestBlockOpen] = useState(false);
   const [saved, setSaved] = useState(false);
+  const profileAvatar =
+    user?.profileImage || user?.avatar || profile?.profileImage || profile?.avatar;
 
   useEffect(() => {
     if (salon) setSalon(salon);
@@ -412,9 +410,18 @@ export default function SalonDetail() {
             </Link>
           ))}
         </nav>
-        <button type="button" className="salon-detail-book-button header-cta" onClick={scrollToBooking}>
-          Book Now <MdArrowForward />
-        </button>
+        <div className="salon-detail-header-actions">
+          <button type="button" className="salon-detail-book-button header-cta" onClick={scrollToBooking}>
+            Book Now <MdArrowForward />
+          </button>
+          <button type="button" className="salon-detail-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
+            <MdSearch />
+          </button>
+          {userType === 'authenticated' && (                <button type="button" className="salon-detail-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
+              <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="salon-detail-profile-avatar" />
+            </button>
+          )}
+        </div>
         <button
           type="button"
           className="salon-detail-menu-button"

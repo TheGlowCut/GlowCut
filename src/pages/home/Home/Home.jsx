@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -25,6 +25,8 @@ import stylistGrid from '../../../assets/home/stylist-grid.png';
 import glowcutMark from '../../../assets/brand/glowcut-mark.png';
 import { useSalonList } from '../../../hooks/useSalon';
 import * as salonService from '../../../services/salonService';
+import AuthContext from '../../../context/AuthContext';
+import Avatar from '../../../components/ui/Avatar';
 import './Home.css';
 
 const NAV_LINKS = [
@@ -32,6 +34,7 @@ const NAV_LINKS = [
   { label: 'Salon & Service', to: '/services' },
   { label: 'Stylists & Offers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
+  { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
 
 const BENEFITS = [
@@ -58,17 +61,10 @@ const STATS = [
 
 const FOOTER_LINKS = {
   Company: [
-    { label: 'About Us', to: '/contact-us' },
-    { label: 'Careers', to: '/careers' },
     { label: 'Privacy Policy', to: '/privacy-policy' },
-    { label: 'Terms and Conditions', to: '/terms-of-service' },
-  ],
-  Features: [
-    { label: 'Online Booking', to: '/services' },
-    { label: 'Sales & Payments', to: '/rewards/glow' },
-    { label: 'Marketing & Automation', to: '/support/updates' },
-    { label: 'Reporting', to: '/profile' },
-    { label: 'Mini-CRM', to: '/profile' },
+    { label: 'Terms of Service', to: '/terms-of-service' },
+    { label: 'Contact Us', to: '/contact-us' },
+    { label: 'Careers', to: '/careers' },
   ],
 };
 
@@ -99,12 +95,15 @@ function GoldButton({ children, onClick, className = '' }) {
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user, profile, userType } = useContext(AuthContext);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchArea, setSearchArea] = useState('');
 
   const { salons, isLoading: loadingSalons } = useSalonList();
   const [stylists, setStylists] = useState([]);
   const [loadingStylists, setLoadingStylists] = useState(true);
+  const profileAvatar =
+    user?.profileImage || user?.avatar || profile?.profileImage || profile?.avatar;
 
   useEffect(() => {
     salonService
@@ -134,9 +133,19 @@ export default function Home() {
               ))}
             </nav>
 
-            <GoldButton onClick={() => navigate('/salons/nearby')} className="home-header-cta">
-              Book Now
-            </GoldButton>
+            <div className="home-header-actions">
+              <GoldButton onClick={() => navigate('/salons/nearby')} className="home-header-cta">
+                Book Now
+              </GoldButton>
+              <button type="button" className="home-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
+                <MdSearch />
+              </button>
+              {userType === 'authenticated' && (
+                <button type="button" className="home-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
+                  <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="home-profile-avatar" />
+                </button>
+              )}
+            </div>
 
             <button
               type="button"
@@ -229,14 +238,14 @@ export default function Home() {
               </div>
             </form>
 
-            <div className="home-benefits">
+            {/* <div className="home-benefits">
               {BENEFITS.map(({ label, icon: Icon, active }) => (
                 <span key={label} className={active ? 'active' : ''}>
                   <Icon />
                   {label}
                 </span>
               ))}
-            </div>
+            </div> */}
           </div>
 
           <div className="home-slider-controls" aria-hidden="true">
@@ -249,7 +258,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+{/* 
       <section className="home-shell home-feature-wrap">
         <article className="home-feature-card">
           <header className="home-feature-heading">
@@ -321,7 +330,7 @@ export default function Home() {
             </div>
           </div>
         </article>
-      </section>
+      </section> */}
 
       <section className="home-shell home-stats-section">
         <h2>Smarter Growth From Day One</h2>
@@ -365,7 +374,13 @@ export default function Home() {
             salons.slice(0, 3).map((salon) => (
               <article key={salon._id || salon.id}>
                 <div className="home-salon-image">
-                  <img src={salon.image || salon.images?.[0] || 'https://images.unsplash.com/photo-1600948836101-f9ffda59d250?auto=format&fit=crop&w=900&q=90'} alt={salon.name} />
+                  <img
+                    src={salon.coverImage || salon.coverPhoto || salon.logo || salon.image || salon.images?.[0] || landingHero}
+                    alt={salon.name}
+                    onError={(event) => {
+                      event.currentTarget.src = landingHero;
+                    }}
+                  />
                   <span>
                     <MdStar /> {salon.averageRating ? Number(salon.averageRating).toFixed(1) : 'New'}
                   </span>
@@ -373,7 +388,6 @@ export default function Home() {
                 <div className="home-salon-copy">
                   <div className="home-salon-title">
                     <h3>{salon.name}</h3>
-                    <strong>$$$</strong>
                   </div>
                   <p>
                     <MdLocationOn /> {salon.address?.area || 'Area'}
