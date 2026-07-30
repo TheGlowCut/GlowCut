@@ -118,16 +118,46 @@ export async function getAvailableTimeSlots(salonId, barberId, dateStr) {
 
   let takenTimes = new Set();
 
-  try {
-    if (barberId) {
+  // Fetch salon operating hours from DB
+  let salonStart = null;
+  let salonEnd = null;
+  if (salonId) {
+    try {
+      const { data: salonRes } = await apiClient.get(`/salons/${salonId}`);
+      const salon = salonRes?.data;
+      salonStart = salon?.openingTime || salon?.startTime || null;
+      salonEnd = salon?.closingTime || salon?.endTime || null;
+    } catch (err) {
+      // salon hours not available
+    }
+  }
+
+  // Fetch barber's individual working hours from DB
+  let barberStart = null;
+  let barberEnd = null;
+  if (barberId) {
+    try {
       const { data: barberRes } = await apiClient.get(`/barbers/${barberId}`);
       const barber = barberRes.data;
-      if (barber?.startTime) shiftStart = barber.startTime;
-      if (barber?.endTime) shiftEnd = barber.endTime;
+      barberStart = barber?.startTime || null;
+      barberEnd = barber?.endTime || null;
+    } catch (err) {
+      // barber hours not available
     }
-  } catch (err) {
-    // fall back to default shift hours
   }
+
+  // Calculate final shift:
+  // - Barber selected → use barber's startTime/endTime directly
+  // - No barber → use salon's openingTime/closingTime
+  // - Fallback → defaults
+  if (barberStart && barberEnd) {
+    shiftStart = barberStart;
+    shiftEnd = barberEnd;
+  } else if (salonStart && salonEnd) {
+    shiftStart = salonStart;
+    shiftEnd = salonEnd;
+  }
+  // else keep defaults (09:00-21:00)
 
   try {
     if (salonId) {
@@ -154,7 +184,7 @@ export async function getAvailableTimeSlots(salonId, barberId, dateStr) {
 
   for (let t = startMin; t < endMin; t += SLOT_MINUTES) {
     const time = toHHMM(t);
-    const isPast = isToday && t <= nowMin;
+    const isPast = isToday && t < nowMin;
     slots.push({
       time,
       status: takenTimes.has(time) || isPast ? 'unavailable' : 'available',
