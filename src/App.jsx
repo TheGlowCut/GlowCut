@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { Toaster } from 'react-hot-toast';
 import AppRoutes from './routes/AppRoutes';
 import { AuthProvider } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import { BookingProvider } from './context/BookingContext';
 import { UserProvider } from './context/UserContext';
 import ThemeContext from './context/ThemeContext';
@@ -43,12 +44,14 @@ function ThemedToaster() {
 export default function App() {
   return (
     <AuthProvider>
-      <UserProvider>
-        <BookingProvider>
-          <AppRoutes />
-          <ThemedToaster />
-        </BookingProvider>
-      </UserProvider>
+      <SocketProvider>
+        <UserProvider>
+          <BookingProvider>
+            <AppRoutes />
+            <ThemedToaster />
+          </BookingProvider>
+        </UserProvider>
+      </SocketProvider>
     </AuthProvider>
   );
 }

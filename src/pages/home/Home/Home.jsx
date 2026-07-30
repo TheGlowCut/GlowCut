@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -26,6 +26,7 @@ import glowcutMark from '../../../assets/brand/glowcut-mark.png';
 import { useSalonList } from '../../../hooks/useSalon';
 import * as salonService from '../../../services/salonService';
 import AuthContext from '../../../context/AuthContext';
+import SocketContext, { SOCKET_EVENTS } from '../../../context/SocketContext';
 import Avatar from '../../../components/ui/Avatar';
 import './Home.css';
 
@@ -96,6 +97,7 @@ function GoldButton({ children, onClick, className = '' }) {
 export default function Home() {
   const navigate = useNavigate();
   const { user, profile, userType } = useContext(AuthContext);
+  const { socket, isConnected } = useContext(SocketContext) || {};
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchArea, setSearchArea] = useState('');
 
@@ -112,6 +114,32 @@ export default function Home() {
       .catch(() => setStylists([]))
       .finally(() => setLoadingStylists(false));
   }, []);
+
+  // Real-time barber status updates via socket
+  const handleBarberStatusChange = useCallback((data) => {
+    if (!data?._id) return;
+    setStylists((prev) => {
+      const updated = prev.map((b) => {
+        if (String(b._id) === String(data._id)) {
+          return {
+            ...b,
+            isAvailable: data.isAvailable ?? b.isAvailable,
+            status: data.status ?? b.status,
+          };
+        }
+        return b;
+      });
+      return updated;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+    socket.on(SOCKET_EVENTS.BARBER_STATUS_CHANGED, handleBarberStatusChange);
+    return () => {
+      socket.off(SOCKET_EVENTS.BARBER_STATUS_CHANGED, handleBarberStatusChange);
+    };
+  }, [socket, isConnected, handleBarberStatusChange]);
 
   const goToNearbySalons = () => {
     const query = searchArea.trim();
@@ -451,7 +479,9 @@ export default function Home() {
               <article className="home-lead-stylist">
                 <img src={stylists[0].profileImage || leadStylistImage} alt={stylists[0].name || stylists[0].userName} />
                 <div className="home-stylist-shade" />
-                <span className="home-stylist-badge available">● &nbsp; Available Today</span>
+                <span className={`home-stylist-badge ${stylists[0].isAvailable !== false ? 'available' : ''}`}>
+                  ● &nbsp; {stylists[0].isAvailable !== false ? 'Available Today' : 'Currently Booked'}
+                </span>
                 <div className="home-lead-copy">
                   <div className="home-lead-meta">
                     <span>
@@ -486,8 +516,8 @@ export default function Home() {
                         />
                       )}
                       <div className="home-stylist-shade" />
-                      <span className={`home-stylist-badge ${index === 1 ? 'available' : ''}`}>
-                        ● &nbsp; {index === 1 ? 'Available' : 'Booked'}
+                      <span className={`home-stylist-badge ${stylist.isAvailable !== false && stylist.status !== 'inactive' ? 'available' : ''}`}>
+                        ● &nbsp; {stylist.status === 'inactive' ? 'Inactive' : stylist.isAvailable !== false ? 'Available' : 'Booked'}
                       </span>
                       <h3>{stylist.name || stylist.userName}</h3>
                     </div>
