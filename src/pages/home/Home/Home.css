@@ -778,6 +778,27 @@
   border-radius: 50%;
 }
 
+.home-salon-actions small.closed {
+  color: #e74c3c;
+}
+
+.home-salon-actions small.closed i {
+  border-color: #e74c3c;
+  background: #e74c3c;
+}
+
+.home-gold-button:disabled {
+  background: #4a4b50;
+  color: #9b9ca1;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.home-gold-button:disabled:hover {
+  transform: none;
+  background: #4a4b50;
+}
+
 .home-salon-actions .home-gold-button {
   min-height: 34px;
   padding-inline: 17px;

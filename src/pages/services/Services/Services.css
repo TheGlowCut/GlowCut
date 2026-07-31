@@ -102,6 +102,18 @@
   background: #efc872;
 }
 
+.services-gold-button:disabled {
+  background: #4a4b50;
+  color: #9b9ca1;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.services-gold-button:disabled:hover {
+  transform: none;
+  background: #4a4b50;
+}
+
 .services-gold-button svg {
   font-size: 15px;
 }

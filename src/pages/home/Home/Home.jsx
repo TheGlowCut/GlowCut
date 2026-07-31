@@ -83,9 +83,9 @@ function Brand() {
   );
 }
 
-function GoldButton({ children, onClick, className = '' }) {
+function GoldButton({ children, onClick, className = '', disabled = false }) {
   return (
-    <button type="button" onClick={onClick} className={`home-gold-button ${className}`}>
+    <button type="button" onClick={onClick} disabled={disabled} className={`home-gold-button ${className}`}>
       <span>{children}</span>
       <MdArrowForward aria-hidden="true" />
     </button>
@@ -413,10 +413,15 @@ export default function Home() {
                     <span>Spa</span>
                   </div>
                   <div className="home-salon-actions">
-                    <small>
-                      <i /> {salon.status || 'Open'}
+                    <small className={salon.isActive === false ? 'closed' : ''}>
+                      <i /> {salon.isActive === false ? 'Closed' : 'Open'}
                     </small>
-                    <GoldButton onClick={() => navigate(`/salons/${salon._id || salon.id}`)}>Book Now</GoldButton>
+                    <GoldButton
+                      disabled={salon.isActive === false}
+                      onClick={() => navigate(`/salons/${salon._id || salon.id}`)}
+                    >
+                      {salon.isActive === false ? 'Closed' : 'Book Now'}
+                    </GoldButton>
                   </div>
                 </div>
               </article>

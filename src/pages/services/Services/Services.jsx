@@ -82,6 +82,7 @@ const getSalonLocation = (salon) => {
 };
 
 const isSalonOpen = (salon) => {
+  if (typeof salon?.isActive === 'boolean') return salon.isActive;
   if (typeof salon?.isOpen === 'boolean') return salon.isOpen;
   if (typeof salon?.openNow === 'boolean') return salon.openNow;
   const status = String(salon?.status || salon?.availability || '').toLowerCase();
@@ -111,9 +112,9 @@ function Brand() {
   );
 }
 
-function GoldButton({ children, onClick, className = '' }) {
+function GoldButton({ children, onClick, className = '', disabled = false }) {
   return (
-    <button type="button" onClick={onClick} className={`services-gold-button ${className}`}>
+    <button type="button" onClick={onClick} disabled={disabled} className={`services-gold-button ${className}`}>
       <span>{children}</span>
       <MdArrowForward />
     </button>
@@ -454,11 +455,12 @@ export default function Services() {
                               </small>
                             </div>
                             <GoldButton
+                              disabled={!open}
                               onClick={() =>
                                 navigate(salonId ? `/salons/${salonId}` : '/salons/nearby')
                               }
                             >
-                              View Salon
+                              {open ? 'View Salon' : 'Closed'}
                             </GoldButton>
                           </div>
                         </div>
