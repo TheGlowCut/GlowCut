@@ -8,7 +8,6 @@ import BookingFlowShell from '../BookingFlow/BookingFlowShell';
 import {
   formatCurrency,
   formatDuration,
-  getFirstAvailableBarber,
   getSalonQuery,
   normalizeService,
 } from '../BookingFlow/bookingFlowUtils';
@@ -64,9 +63,15 @@ export default function BookingService() {
         }
       }
 
-      if (!booking.stylist && barberResult.status === 'fulfilled' && Array.isArray(barberResult.value)) {
-        const defaultBarber = getFirstAvailableBarber(barberResult.value);
-        if (defaultBarber) setStylist(defaultBarber);
+      if (barberResult.status === 'fulfilled' && Array.isArray(barberResult.value)) {
+        const salonBarbers = barberResult.value;
+        const stylistId = booking.stylist?._id || booking.stylist?.id || '';
+        const stylistInSalon =
+          stylistId && salonBarbers.some((barber) => (barber?._id || barber?.id) === stylistId);
+        if (booking.stylist && !stylistInSalon) {
+          // Never auto-select — just drop a stylist picked on another salon.
+          setStylist(null);
+        }
       }
 
       setLoading(false);
@@ -87,6 +92,10 @@ export default function BookingService() {
   const handleContinue = () => {
     if (!selectedService) {
       toast.error('Please choose a service first.');
+      return;
+    }
+    if (!booking.stylist) {
+      toast.error('No barber selected. Please choose a barber on the salon page first.');
       return;
     }
     navigate(`/booking/date-time${getSalonQuery(salonId)}`);

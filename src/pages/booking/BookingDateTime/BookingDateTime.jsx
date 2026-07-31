@@ -9,7 +9,6 @@ import BookingFlowShell from '../BookingFlow/BookingFlowShell';
 import {
   buildUpcomingDays,
   formatTimeLabel,
-  getFirstAvailableBarber,
   getSalonQuery,
 } from '../BookingFlow/bookingFlowUtils';
 
@@ -48,9 +47,15 @@ export default function BookingDateTime() {
         setSalon(salonResult.value);
       }
 
-      if (!booking.stylist && barberResult.status === 'fulfilled' && Array.isArray(barberResult.value)) {
-        const defaultBarber = getFirstAvailableBarber(barberResult.value);
-        if (defaultBarber) setStylist(defaultBarber);
+      if (barberResult.status === 'fulfilled' && Array.isArray(barberResult.value)) {
+        const salonBarbers = barberResult.value;
+        const stylistId = booking.stylist?._id || booking.stylist?.id || '';
+        const stylistInSalon =
+          stylistId && salonBarbers.some((barber) => (barber?._id || barber?.id) === stylistId);
+        if (booking.stylist && !stylistInSalon) {
+          // Never auto-select — just drop a stylist picked on another salon.
+          setStylist(null);
+        }
       }
     });
 
@@ -60,7 +65,15 @@ export default function BookingDateTime() {
   }, [booking.salon, booking.stylist, salonId, setSalon, setStylist]);
 
   useEffect(() => {
-    if (!salonId || !booking.stylist || !selectedDate) return;
+    if (!salonId || !selectedDate) return;
+    if (!booking.stylist) {
+      // No stylist for this salon — stop the spinner and let the UI show a
+      // clear error instead of loading forever.
+      setSlots([]);
+      setSelectedSlot('');
+      setLoading(false);
+      return;
+    }
     let active = true;
 
     setLoading(true);
@@ -101,6 +114,10 @@ export default function BookingDateTime() {
   };
 
   const handleContinue = () => {
+    if (!booking.stylist) {
+      toast.error('No barber is available for this salon. Please restart booking from another salon.');
+      return;
+    }
     if (!selectedSlot) {
       toast.error('Please select an available time slot.');
       return;
@@ -129,6 +146,11 @@ export default function BookingDateTime() {
 
       {loading ? (
         <div className="booking-flow-loading">Loading available slots...</div>
+      ) : !booking.stylist ? (
+        <div className="booking-flow-empty">
+          No barber is available for this salon, so we can't continue the
+          booking. Please go back and choose another salon.
+        </div>
       ) : slots.length ? (
         <div className="booking-flow-slot-grid">
           {slots.map((slot) => (
