@@ -62,7 +62,7 @@ export const formatTimeLabel = (time) => {
   if (!Number.isFinite(hour)) return time;
   const suffix = hour >= 12 ? 'PM' : 'AM';
   const displayHour = hour % 12 || 12;
-  return `${displayHour}:${minute}`;
+  return `${displayHour}:${minute} ${suffix}`;
 };
 
 export const buildUpcomingDays = (count = 7) =>
@@ -81,9 +81,7 @@ export const formatBookingMoment = (isoDate, time) => {
   const date = new Date(`${isoDate}T00:00:00`);
   const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
   if (!time) return dayLabel;
-  const [hourString] = time.split(':');
-  const suffix = Number(hourString) >= 12 ? 'PM' : 'AM';
-  return `${dayLabel}, ${formatTimeLabel(time)} ${suffix}`;
+  return `${dayLabel}, ${formatTimeLabel(time)}`;
 };
 
 export const getFirstAvailableBarber = (barbers = []) =>

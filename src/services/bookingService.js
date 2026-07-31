@@ -179,8 +179,13 @@ export async function getAvailableTimeSlots(salonId, barberId, dateStr) {
   const slots = [];
   const startMin = toMinutes(shiftStart);
   const endMin = toMinutes(shiftEnd);
-  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-  const isToday = !dateStr || dateStr === 'today';
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  // Callers pass a real 'YYYY-MM-DD' date (e.g. '2026-07-31'), not the string
+  // 'today'. The date pickers build their dates with toISOString().split('T')[0]
+  // (UTC-based), so compare against the same UTC ISO string to grey out today's
+  // past slots — otherwise UTC+ timezones would mismatch on early mornings.
+  const isToday = !dateStr || dateStr === 'today' || dateStr === now.toISOString().split('T')[0];
 
   for (let t = startMin; t < endMin; t += SLOT_MINUTES) {
     const time = toHHMM(t);

@@ -81,15 +81,18 @@ export default function BookingDateTime() {
       .getAvailableTimeSlots(salonId, booking.stylist._id || booking.stylist.id, selectedDate)
       .then((data) => {
         if (!active) return;
-        const availableSlots = Array.isArray(data)
-          ? data.filter((slot) => slot.status === 'available').slice(0, 8)
-          : [];
-        setSlots(availableSlots);
+        // Show the FULL day of slots (taken/past ones come back as
+        // 'unavailable' and are rendered disabled) — same as the salon page.
+        const allSlots = Array.isArray(data) ? data : [];
+        setSlots(allSlots);
 
         setSelectedSlot((current) => {
-          const nextSlot = availableSlots.some((slot) => slot.time === current)
+          const stillValid = allSlots.some(
+            (slot) => slot.time === current && slot.status === 'available'
+          );
+          const nextSlot = stillValid
             ? current
-            : availableSlots[0]?.time || '';
+            : allSlots.find((slot) => slot.status === 'available')?.time || '';
           if (nextSlot) setTimeSlot(selectedDate, nextSlot, selectedDate);
           return nextSlot;
         });
@@ -152,18 +155,26 @@ export default function BookingDateTime() {
           booking. Please go back and choose another salon.
         </div>
       ) : slots.length ? (
-        <div className="booking-flow-slot-grid">
-          {slots.map((slot) => (
-            <button
-              key={slot.time}
-              type="button"
-              className={`booking-flow-time-option ${selectedSlot === slot.time ? 'selected' : ''}`}
-              onClick={() => handleTimeSelect(slot.time)}
-            >
-              {formatTimeLabel(slot.time)}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="booking-flow-slot-grid">
+            {slots.map((slot) => (
+              <button
+                key={slot.time}
+                type="button"
+                disabled={slot.status === 'unavailable'}
+                className={`booking-flow-time-option ${
+                  selectedSlot === slot.time ? 'selected' : ''
+                } ${slot.status === 'unavailable' ? 'unavailable' : ''}`}
+                onClick={() => handleTimeSelect(slot.time)}
+              >
+                {formatTimeLabel(slot.time)}
+              </button>
+            ))}
+          </div>
+          {!slots.some((slot) => slot.status === 'available') && (
+            <div className="booking-flow-empty">No available slots for the selected date.</div>
+          )}
+        </>
       ) : (
         <div className="booking-flow-empty">No available slots for the selected date.</div>
       )}
