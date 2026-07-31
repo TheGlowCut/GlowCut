@@ -56,15 +56,21 @@ const SOCIAL_LINKS = [
   { label: 'LinkedIn', icon: FaLinkedinIn },
 ];
 
-const buildDates = () =>
-  Array.from({ length: 2 }, (_, index) => {
-    const date = new Date();
-    date.setDate(date.getDate() + index);
-    return {
-      label: index === 0 ? 'Today' : 'Tomorrow',
-      iso: date.toISOString().split('T')[0],
-    };
-  });
+const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+const generateUpcomingDays = () => {
+  const result = [];
+  const today = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const isoDate = d.toISOString().split('T')[0];
+    const dayEnum = dayNames[d.getDay()];
+    let label = i === 0 ? "Today" : i === 1 ? "Tomorrow" : dayEnum;
+    result.push({ isoDate, label, dayEnum, dateText: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) });
+  }
+  return result;
+};
 
 const getEntityId = (entity) => entity?._id || entity?.id || '';
 
@@ -170,7 +176,7 @@ export default function SalonDetail() {
   const { salon, isLoading, error } = useSalon(id);
   const { booking, setSalon, toggleService, setStylist, setTimeSlot, totalPrice } = useBooking();
 
-  const [dates] = useState(buildDates);
+  const [dates] = useState(generateUpcomingDays);
   const [selectedDate, setSelectedDate] = useState(0);
   const [services, setServices] = useState([]);
   const [barbers, setBarbers] = useState([]);
@@ -253,22 +259,37 @@ export default function SalonDetail() {
     setStylist(firstAvailable);
   }, [barbers, booking.stylist, setStylist]);
 
+  const barber = booking.stylist;
+  const hasWorkingDaysConfigured = barber?.workingDays && barber.workingDays.length > 0;
+  const workingDays = hasWorkingDaysConfigured ? barber.workingDays : [];
+
   useEffect(() => {
     if (!id) return undefined;
     let active = true;
     setLoadingSlots(true);
     const barberId = getEntityId(booking.stylist);
 
+    const day = dates[selectedDate];
+    if (hasWorkingDaysConfigured && !workingDays.includes(day.dayEnum)) {
+      if (active) {
+        setSlots([]);
+        setSelectedSlot('');
+        setLoadingSlots(false);
+      }
+      return;
+    }
+
     bookingService
-      .getAvailableTimeSlots(id, barberId, dates[selectedDate].iso)
+      .getAvailableTimeSlots(id, barberId, day.isoDate)
       .then((data) => {
         if (!active) return;
-        const available = Array.isArray(data)
-          ? data.filter((slot) => slot.status === 'available').slice(0, 6)
-          : [];
-        setSlots(available);
+        const list = Array.isArray(data) ? data : [];
+        setSlots(list);
+        const firstAvailable = list.find((slot) => slot.status === 'available');
         setSelectedSlot((current) =>
-          available.some((slot) => slot.time === current) ? current : available[0]?.time || ''
+          list.some((slot) => slot.time === current && slot.status === 'available')
+            ? current
+            : firstAvailable?.time || ''
         );
       })
       .catch(() => {
@@ -360,8 +381,10 @@ export default function SalonDetail() {
       toast.error('Please pick an available time slot');
       return;
     }
-    setTimeSlot(dates[selectedDate].iso, selectedSlot, dates[selectedDate].label);
-    navigate('/booking/confirm');
+
+    const day = dates[selectedDate];
+    setTimeSlot(day.isoDate, selectedSlot, day.label);
+    navigate(`/booking/service?salonId=${encodeURIComponent(id)}`);
   };
 
   const handleShare = async () => {
@@ -417,7 +440,8 @@ export default function SalonDetail() {
           <button type="button" className="salon-detail-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
             <MdSearch />
           </button>
-          {userType === 'authenticated' && (                <button type="button" className="salon-detail-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
+          {userType === 'authenticated' && (
+            <button type="button" className="salon-detail-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
               <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="salon-detail-profile-avatar" />
             </button>
           )}
@@ -651,30 +675,48 @@ export default function SalonDetail() {
 
           <aside className="salon-detail-booking-card" id="salon-booking">
             <h2>Book a visit</h2>
-            <p>Available slots today & tomorrow</p>
-            <div className="salon-detail-date-switch">
-              {dates.map((date, index) => (
-                <button
-                  type="button"
-                  className={selectedDate === index ? 'active' : ''}
-                  onClick={() => setSelectedDate(index)}
-                  key={date.iso}
-                >
-                  {date.label}
-                </button>
-              ))}
+            <p>Available slots for next 7 days</p>
+            <div className="salon-detail-date-picker">
+              {dates.map((day, index) => {
+                const isAvailable = !hasWorkingDaysConfigured || workingDays.includes(day.dayEnum);
+                const isSelected = selectedDate === index;
+                return (
+                  <button
+                    type="button"
+                    disabled={!isAvailable}
+                    className={`${isSelected ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                    onClick={() => {
+                      if (!isAvailable) {
+                        toast.error(`Barber is not available on ${day.dayEnum}s.`);
+                        return;
+                      }
+                      setSelectedDate(index);
+                      setSelectedSlot('');
+                    }}
+                    key={day.isoDate}
+                  >
+                    <span className="salon-detail-date-label">
+                      {day.label === "Today" || day.label === "Tomorrow" ? day.label : day.dayEnum.slice(0, 3)}
+                    </span>
+                    <span className="salon-detail-date-number">{day.dateText.split(' ')[1]}</span>
+                  </button>
+                );
+              })}
             </div>
             <div className="salon-detail-slots">
               {loadingSlots
-                ? Array.from({ length: 6 }, (_, index) => <i key={index} />)
+                ? Array.from({ length: 10 }, (_, index) => <i key={index} />)
                 : slots.map((slot) => (
                     <button
                       type="button"
-                      className={selectedSlot === slot.time ? 'selected' : ''}
-                      onClick={() => setSelectedSlot(slot.time)}
+                      disabled={slot.status === 'unavailable'}
+                      className={`${selectedSlot === slot.time ? 'selected' : ''} ${slot.status === 'unavailable' ? 'unavailable' : ''}`}
+                      onClick={() => {
+                        if (slot.status === 'available') setSelectedSlot(slot.time);
+                      }}
                       key={slot.time}
                     >
-                      {formatTime(slot.time)}
+                      {slot.time.includes(':') ? formatTime(slot.time) : slot.time}
                     </button>
                   ))}
             </div>

@@ -71,6 +71,8 @@ import NotFound from '../pages/NotFound';
 import ServiceMenu from '../pages/admin/ServiceMenu/ServiceMenu';
 import StaffManager from '../pages/admin/StaffManager/StaffManager';
 import BookingManager from '../pages/admin/BookingManager/BookingManager';
+import BookingDateTime from '../pages/booking/BookingDateTime';
+import BookingService from '../pages/booking/BookingService';
 
 export default function AppRoutes() {
   const { profile, isAuthenticated } = useAuthContext(); // 🔑 Checking global session attributes
@@ -133,6 +135,8 @@ export default function AppRoutes() {
         <Route path="/stylists" element={<Stylists />} />
 
         {/* Booking */}
+        <Route path="/booking/service" element={<BookingService />} />
+        <Route path="/booking/date-time" element={<BookingDateTime />} />
         <Route path="/booking/confirm" element={<ConfirmBooking />} />
         <Route path="/booking/summary" element={<BookingSummary />} />
         <Route path="/booking/waiting-lounge" element={<WaitingLounge />} />

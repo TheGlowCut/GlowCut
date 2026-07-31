@@ -21,6 +21,10 @@ export function BookingProvider({ children }) {
     setBooking((prev) => ({ ...prev, salon }));
   }, []);
 
+  const setServices = useCallback((services) => {
+    setBooking((prev) => ({ ...prev, services }));
+  }, []);
+
   const toggleService = useCallback((service) => {
     setBooking((prev) => {
       const exists = prev.services.find((s) => s.id === service.id);
@@ -82,6 +86,7 @@ export function BookingProvider({ children }) {
     booking,
     bookingHistory,
     setSalon,
+    setServices,
     toggleService,
     setStylist,
     setTimeSlot,
