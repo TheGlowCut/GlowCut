@@ -30,8 +30,8 @@ import './Services.css';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'Salon & Service', to: '/services' },
-  { label: 'Salon & Barbers', to: '/stylists' },
+  { label: 'Salons & Service', to: '/services' },
+  { label: 'Salons & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -340,7 +340,7 @@ export default function Services() {
             Discover
           </div>
           <h1>
-            Explore <span>Salon & Services</span>
+            Explore <span>Salons & Services</span>
           </h1>
           <p>
             Browse our curated partner salons and explore services tailored just for you.
