@@ -190,12 +190,36 @@ export default function SalonDetail() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [guestBlockOpen, setGuestBlockOpen] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [savingSalon, setSavingSalon] = useState(false);
   const profileAvatar =
     user?.profileImage || user?.avatar || profile?.profileImage || profile?.avatar;
 
   useEffect(() => {
     if (salon) setSalon(salon);
   }, [salon, setSalon]);
+
+  // Restore the saved state for this salon from the backend once the user
+  // is authenticated (guests always start unsaved). The profile payload
+  // (publicUser.savedSalonIds) gives an instant hint; the fetch keeps it
+  // accurate even if the profile is stale.
+  useEffect(() => {
+    if (userType !== 'authenticated' || !id) return undefined;
+    let active = true;
+    if (profile?.savedSalonIds?.includes(id)) setSaved(true);
+    salonService
+      .getSavedSalons()
+      .then((list) => {
+        if (!active) return;
+        const ids = new Set(Array.isArray(list) ? list.map(getEntityId) : []);
+        setSaved(ids.has(id));
+      })
+      .catch(() => {
+        // Non-critical — leave the button in its default (unsaved) state.
+      });
+    return () => {
+      active = false;
+    };
+  }, [id, userType, profile?.savedSalonIds]);
 
   useEffect(() => {
     if (!id) return undefined;
@@ -387,6 +411,31 @@ export default function SalonDetail() {
     navigate(`/booking/service?salonId=${encodeURIComponent(id)}`);
   };
 
+  const handleSave = async () => {
+    if (userType !== 'authenticated') {
+      setGuestBlockOpen(true);
+      return;
+    }
+    if (!id || savingSalon) return;
+
+    setSavingSalon(true);
+    try {
+      if (saved) {
+        await salonService.unsaveSalon(id);
+        setSaved(false);
+        toast.success('Salon removed from your saved salons');
+      } else {
+        await salonService.saveSalon(id);
+        setSaved(true);
+        toast.success('Salon saved to your profile');
+      }
+    } catch (saveError) {
+      toast.error(saveError?.message || 'Could not update saved salons. Please try again.');
+    } finally {
+      setSavingSalon(false);
+    }
+  };
+
   const handleShare = async () => {
     const shareData = {
       title: salon?.name || 'Glow&Cut salon',
@@ -524,8 +573,15 @@ export default function SalonDetail() {
                 <button type="button" className="salon-detail-book-button" onClick={scrollToBooking}>
                   Book Now <MdArrowForward />
                 </button>
-                <button type="button" onClick={() => setSaved((current) => !current)}>
-                  {saved ? <MdFavorite /> : <MdFavoriteBorder />} {saved ? 'Saved' : 'Save'}
+                <button type="button" className={saved ? 'is-saved' : ''} disabled={savingSalon} onClick={handleSave}>
+                  {savingSalon ? (
+                    <span className="salon-detail-save-spinner" />
+                  ) : saved ? (
+                    <MdFavorite />
+                  ) : (
+                    <MdFavoriteBorder />
+                  )}{' '}
+                  {saved ? 'Saved' : 'Save'}
                 </button>
                 <button type="button" onClick={handleShare}><MdShare /> Share</button>
                 <a href={salon.phone ? `tel:${salon.phone}` : '#'}><MdPhone /> Call</a>

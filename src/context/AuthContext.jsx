@@ -30,6 +30,7 @@ const toProfile = (backendUser, extra = {}) => {
     profileImage: backendUser?.profileImage || '',
     avatar: backendUser?.profileImage || DEFAULT_AVATAR,
     status: backendUser?.status || 'active',
+    savedSalonIds: backendUser?.savedSalonIds || [],
     hasSalon: extra.hasSalon || false,
     salon: extra.salon || null,
   };

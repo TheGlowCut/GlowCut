@@ -18,6 +18,7 @@ import AuthContext from '../../../context/AuthContext';
 import { UserContext } from '../../../context/UserContext';
 import { useAuth } from '../../../hooks/useAuth';
 import * as bookingService from '../../../services/bookingService';
+import * as salonService from '../../../services/salonService';
 import EmptyState from '../../../components/ui/EmptyState';
 
 const CITIES = [
@@ -61,6 +62,24 @@ export default function ProfileSettings() {
 
   const [bookingHistory, setBookingHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+
+  const [savedSalonCount, setSavedSalonCount] = useState(0);
+
+  useEffect(() => {
+    if (!profile?.id) return undefined;
+    let isMounted = true;
+    salonService
+      .getSavedSalons()
+      .then((list) => {
+        if (isMounted) setSavedSalonCount(Array.isArray(list) ? list.length : 0);
+      })
+      .catch(() => {
+        if (isMounted) setSavedSalonCount(0);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [profile?.id]);
 
   useEffect(() => {
     if (profile && !editing) {
@@ -363,7 +382,7 @@ export default function ProfileSettings() {
       <motion.section variants={fadeUp} className="space-y-md mb-xl">
         <button
           type="button"
-          onClick={() => navigate('/salons/nearby')}
+          onClick={() => navigate('/profile/saved-salons')}
           className="w-full glass-panel rounded-xl p-md flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors border border-white/5"
         >
           <div className="flex items-center gap-md">
@@ -372,7 +391,9 @@ export default function ProfileSettings() {
             </div>
             <div className="text-left">
               <h3 className="font-headline-md text-headline-md text-on-surface">Saved Salons</h3>
-              <p className="text-caption text-on-surface-variant">3 favourite locations</p>
+              <p className="text-caption text-on-surface-variant">
+                {savedSalonCount} {savedSalonCount === 1 ? 'favourite location' : 'favourite locations'}
+              </p>
             </div>
           </div>
           <MdChevronRight className="text-on-surface-variant" />

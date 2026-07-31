@@ -55,6 +55,7 @@ import Updates from '../pages/support/Updates';
 import ProfileSettings from '../pages/profile/ProfileSettings';
 import Feedback from '../pages/profile/Feedback';
 import PrivacyCenter from '../pages/profile/PrivacyCenter';
+import SavedSalons from '../pages/profile/SavedSalons';
 
 // Public info
 import PrivacyPolicy from '../pages/public/PrivacyPolicy/PrivacyPolicy';
@@ -159,6 +160,7 @@ export default function AppRoutes() {
         {/* Profile */}
         <Route path="/profile" element={<ProfileSettings />} />
         <Route path="/profile/feedback" element={<Feedback />} />
+        <Route path="/profile/saved-salons" element={<SavedSalons />} />
         {/* Public Info */}
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
