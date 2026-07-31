@@ -174,7 +174,7 @@ export default function SalonDetail() {
   const navigate = useNavigate();
   const { user, profile, userType } = useContext(AuthContext);
   const { salon, isLoading, error } = useSalon(id);
-  const { booking, setSalon, toggleService, setStylist, setTimeSlot, totalPrice } = useBooking();
+  const { booking, setSalon, setServices: setBookingServices, toggleService, setStylist, setTimeSlot } = useBooking();
 
   const [dates] = useState(generateUpcomingDays);
   const [selectedDate, setSelectedDate] = useState(0);
@@ -197,9 +197,24 @@ export default function SalonDetail() {
   const profileAvatar =
     user?.profileImage || user?.avatar || profile?.profileImage || profile?.avatar;
 
+  // Switching to a different salon must start a fresh selection. The booking
+  // context keeps services/barber/date between visits, so without a reset the
+  // previous salon's selected services (and their total price) would leak into
+  // the new salon's "Book a visit" sidebar — and Continue booking could even
+  // create a booking with the WRONG salon's services. Detect the salon change
+  // here and clear the stale selection before the new salon is registered.
   useEffect(() => {
-    if (salon) setSalon(salon);
-  }, [salon, setSalon]);
+    if (!salon) return;
+    const currentSalonId = getEntityId(booking.salon);
+    if (currentSalonId && currentSalonId !== getEntityId(salon)) {
+      setBookingServices([]);
+      setStylist(null);
+      setTimeSlot(null, null, null);
+      setSelectedDate(0);
+      setSelectedSlot('');
+    }
+    setSalon(salon);
+  }, [salon, setSalon, setBookingServices, setStylist, setTimeSlot]);
 
   // Restore the saved state for this salon from the backend once the user
   // is authenticated (guests always start unsaved). The profile payload
@@ -376,6 +391,20 @@ export default function SalonDetail() {
   const startingPrice = services.length
     ? Math.min(...services.map((service) => Number(service.price) || 0))
     : 0;
+  // Only services that actually belong to THIS salon count towards the total.
+  // This keeps the sidebar honest even in the brief moment before a stale
+  // selection from a previous salon is cleared after switching salons.
+  const selectedInMenu = useMemo(
+    () =>
+      booking.services.filter((item) =>
+        services.some((service) => getEntityId(service) === getEntityId(item))
+      ),
+    [booking.services, services]
+  );
+  const selectedTotal = selectedInMenu.reduce(
+    (sum, service) => sum + (Number(service.price) || 0),
+    0
+  );
   const selectedStylistId = getEntityId(booking.stylist);
 
   const ratingDistribution = useMemo(() => {
@@ -436,6 +465,21 @@ export default function SalonDetail() {
   const handleConfirm = () => {
     if (userType === 'guest') {
       setGuestBlockOpen(true);
+      return;
+    }
+    // Only flag services as stale once this salon's menu has actually loaded —
+    // while loading, `services` is empty and would wrongly flag everything.
+    const staleSelected = !loadingServices
+      ? booking.services.filter(
+          (item) => !services.some((service) => getEntityId(service) === getEntityId(item))
+        )
+      : [];
+    if (staleSelected.length) {
+      // Services from a previously visited salon are still lingering — drop
+      // them so this salon's booking can never proceed with the wrong services.
+      setBookingServices(selectedInMenu);
+      toast.error('Please select a service from this salon first');
+      document.getElementById('salon-services')?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
     if (!booking.services.length) {
@@ -847,8 +891,8 @@ export default function SalonDetail() {
               </p>
             )}
             <div className="salon-detail-booking-price">
-              <span>{booking.services.length ? 'Selected total' : 'Starting from'}</span>
-              <strong>Rs {(booking.services.length ? totalPrice : startingPrice).toLocaleString()}</strong>
+              <span>{selectedInMenu.length ? 'Selected total' : 'Starting from'}</span>
+              <strong>Rs {(selectedInMenu.length ? selectedTotal : startingPrice).toLocaleString()}</strong>
             </div>
             {!loadingBarbers && !booking.stylist && (
               <div className="salon-detail-booking-error" role="alert">
