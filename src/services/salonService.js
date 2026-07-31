@@ -153,7 +153,16 @@ export async function deleteService(id) {
   return data;
 }
 
-// --- Reviews for a barber: /api/reviews ---
+// --- Reviews: /api/reviews ---
+// Dedicated salon-level reviews endpoint (newest-first, populated with the
+// customer's userName/profileImage and the barber's name). One request per
+// salon instead of one request per barber.
+export async function getSalonReviews(salonId) {
+  const { data } = await apiClient.get(`/reviews/salon/${salonId}`);
+  return data.data?.reviews ?? data.data ?? [];
+}
+
+// Kept for backward compatibility (legacy per-barber listing).
 export async function getBarberReviews(barberId) {
   const { data } = await apiClient.get(`/reviews/${barberId}`);
   return data.data?.reviews ?? data.data ?? [];

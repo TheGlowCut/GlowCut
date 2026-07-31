@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MdArrowBack, MdArrowForward } from 'react-icons/md';
 import toast from 'react-hot-toast';
@@ -27,6 +27,10 @@ export default function ConfirmBooking() {
   const salonId = searchParams.get('salonId') || booking.salon?._id || booking.salon?.id || '';
 
   const [submitting, setSubmitting] = useState(false);
+  // Ref-based guard so a rapid double-click can never fire two identical
+  // POST /bookings requests (state updates are async, so `submitting` alone
+  // is not enough to block a second submission within the same tick).
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (!salonId) {
@@ -103,6 +107,8 @@ export default function ConfirmBooking() {
       return;
     }
 
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     const toastId = toast.loading('Processing your booking...');
     try {
@@ -135,8 +141,9 @@ export default function ConfirmBooking() {
         error.response?.data?.error ||
         error.message ||
         'Booking failed';
-      toast.error(`Error: ${backendMsg}`, { id: toastId });
+      toast.error(backendMsg, { id: toastId });
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };

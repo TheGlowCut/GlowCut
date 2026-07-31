@@ -16,7 +16,7 @@ import {
 export default function BookingDateTime() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { booking, setSalon, setStylist, setTimeSlot } = useBooking();
+  const { booking, setSalon, setStylist, setTimeSlot, totalDuration } = useBooking();
   const salonId = searchParams.get('salonId') || booking.salon?._id || booking.salon?.id || '';
 
   const dates = useMemo(() => buildUpcomingDays(7), []);
@@ -65,11 +65,12 @@ export default function BookingDateTime() {
 
     setLoading(true);
     bookingService
-      .getAvailableTimeSlots(salonId, booking.stylist._id || booking.stylist.id, selectedDate)
+      .getAvailableTimeSlots(salonId, booking.stylist._id || booking.stylist.id, selectedDate, totalDuration)
       .then((data) => {
         if (!active) return;
+        // Show every valid slot for the selected date — never truncate the list.
         const availableSlots = Array.isArray(data)
-          ? data.filter((slot) => slot.status === 'available').slice(0, 8)
+          ? data.filter((slot) => slot.status === 'available')
           : [];
         setSlots(availableSlots);
 
@@ -93,7 +94,7 @@ export default function BookingDateTime() {
     return () => {
       active = false;
     };
-  }, [booking.stylist, salonId, selectedDate, setTimeSlot]);
+  }, [booking.stylist, salonId, selectedDate, setTimeSlot, totalDuration]);
 
   const handleTimeSelect = (time) => {
     setSelectedSlot(time);
@@ -143,7 +144,7 @@ export default function BookingDateTime() {
           ))}
         </div>
       ) : (
-        <div className="booking-flow-empty">No available slots for the selected date.</div>
+        <div className="booking-flow-empty">No available time slots for the selected date.</div>
       )}
 
       <div className="booking-flow-actions">

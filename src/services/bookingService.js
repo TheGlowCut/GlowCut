@@ -94,20 +94,30 @@ export async function cancelBooking(id) {
 // using the barber's configured shift hours (see Barber model: startTime /
 // endTime) minus any slots already taken by that barber on the given date.
 //
+// We request limit: 100 because GET /bookings paginates at 10 by default —
+// without this, the availability check below would only ever see the 10
+// most recent bookings.
+//
+// A slot is marked unavailable when a booking starting at that time would be
+// rejected by the backend (see bookingPayload in booking.service.js): the
+// slot overlaps an existing booking or the barber's break, or the service
+// would not finish within the barber's working hours (booking duration).
+//
 // Important limitation: GET /bookings scopes results to "your own bookings,
 // or bookings at salons you own" (see listBookings in booking.controller.js).
 // A customer browsing a salon they don't own therefore can't see that
-// salon's other bookings, so the "already taken" check below only ever
-// removes the *current user's own* conflicting bookings — every slot still
-// shows as available to other customers until the backend adds a proper
-// availability endpoint. This is a known, backend-side gap, not a bug here.
-export async function getAvailableTimeSlots(salonId, barberId, dateStr) {
+// salon's other bookings, so the overlap check below only ever removes the
+// *current user's own* conflicting bookings — every slot still shows as
+// available to other customers until the backend adds a proper availability
+// endpoint. This is a known, backend-side gap, not a bug here.
+export async function getAvailableTimeSlots(salonId, barberId, dateStr, durationMinutes = 30) {
   const SLOT_MINUTES = 30;
   let shiftStart = '09:00';
   let shiftEnd = '21:00';
 
   const toMinutes = (hhmm) => {
-    const [h, m] = hhmm.split(':').map(Number);
+    const [h, m] = String(hhmm).split(':').map(Number);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
     return h * 60 + m;
   };
   const toHHMM = (mins) => {
@@ -115,10 +125,16 @@ export async function getAvailableTimeSlots(salonId, barberId, dateStr) {
     const m = mins % 60;
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   };
+  const toISODate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
-  let takenTimes = new Set();
+  const duration = Math.max(Number(durationMinutes) || SLOT_MINUTES, 1);
 
-  // Fetch salon operating hours from DB
+  // Fetch salon operating hours from DB (fallback when barber hours are absent)
   let salonStart = null;
   let salonEnd = null;
   if (salonId) {
@@ -132,15 +148,19 @@ export async function getAvailableTimeSlots(salonId, barberId, dateStr) {
     }
   }
 
-  // Fetch barber's individual working hours from DB
+  // Fetch barber's individual working hours and break from DB
   let barberStart = null;
   let barberEnd = null;
+  let breakStartMin = null;
+  let breakEndMin = null;
   if (barberId) {
     try {
       const { data: barberRes } = await apiClient.get(`/barbers/${barberId}`);
       const barber = barberRes.data;
       barberStart = barber?.startTime || null;
       barberEnd = barber?.endTime || null;
+      breakStartMin = toMinutes(barber?.breakStart);
+      breakEndMin = toMinutes(barber?.breakEnd);
     } catch (err) {
       // barber hours not available
     }
@@ -159,36 +179,47 @@ export async function getAvailableTimeSlots(salonId, barberId, dateStr) {
   }
   // else keep defaults (09:00-21:00)
 
+  // Real booked time windows for this barber/date, as [start, end) minutes.
+  let takenRanges = [];
   try {
     if (salonId) {
-      const params = { salonId };
+      const params = { salonId, limit: 100 };
       if (dateStr && dateStr !== 'today') params.date = dateStr;
       const { data } = await apiClient.get('/bookings', { params });
       const bookings = data.data?.bookings ?? [];
-      takenTimes = new Set(
-        bookings
-          .filter((b) => !barberId || (b.barberId?._id || b.barberId) === barberId)
-          .filter((b) => b.status !== 'cancelled')
-          .map((b) => b.startTime)
-      );
+      takenRanges = bookings
+        .filter((b) => !barberId || (b.barberId?._id || b.barberId) === barberId)
+        .filter((b) => !['cancelled', 'rejected'].includes(b.status))
+        // The backend ignores the `date` query param, so filter client-side:
+        // bookingDate is stored at UTC midnight of the chosen day, which
+        // makes the first 10 chars of the serialized value the day key.
+        .filter((b) => !dateStr || dateStr === 'today' || String(b.bookingDate).slice(0, 10) === dateStr)
+        .map((b) => ({ start: toMinutes(b.startTime), end: toMinutes(b.endTime) }))
+        .filter((r) => r.start !== null && r.end !== null && r.end > r.start);
     }
   } catch (err) {
     // if we can't confirm existing bookings, show every shift slot as open
   }
 
   const slots = [];
-  const startMin = toMinutes(shiftStart);
-  const endMin = toMinutes(shiftEnd);
+  const startMin = toMinutes(shiftStart) ?? 0;
+  const endMin = toMinutes(shiftEnd) ?? 0;
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-  const isToday = !dateStr || dateStr === 'today';
+  // "Today" means the selected calendar date equals the current local date —
+  // callers always pass an ISO date (YYYY-MM-DD), never the string "today".
+  const todayISO = toISODate(new Date());
+  const isToday = !dateStr || dateStr === 'today' || dateStr === todayISO;
+  const hasBreak = breakStartMin !== null && breakEndMin !== null && breakEndMin > breakStartMin;
 
   for (let t = startMin; t < endMin; t += SLOT_MINUTES) {
     const time = toHHMM(t);
+    const slotEnd = t + duration;
     const isPast = isToday && t < nowMin;
-    slots.push({
-      time,
-      status: takenTimes.has(time) || isPast ? 'unavailable' : 'available',
-    });
+    const fitsShift = slotEnd <= endMin;
+    const inBreak = hasBreak && t < breakEndMin && slotEnd > breakStartMin;
+    const overlaps = takenRanges.some((range) => t < range.end && slotEnd > range.start);
+    const unavailable = isPast || !fitsShift || inBreak || overlaps;
+    slots.push({ time, status: unavailable ? 'unavailable' : 'available' });
   }
 
   return slots;

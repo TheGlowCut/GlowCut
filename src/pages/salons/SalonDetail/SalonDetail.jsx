@@ -15,11 +15,11 @@ import {
   MdShare,
   MdStar,
 } from 'react-icons/md';
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
 import toast from 'react-hot-toast';
 import AuthContext from '../../../context/AuthContext';
 import Avatar from '../../../components/ui/Avatar';
 import GuestBlock from '../../../components/auth/GuestBlock';
+import Footer from '../../../components/layout/Footer';
 import Loader from '../../../components/ui/Loader';
 import { useSalon } from '../../../hooks/useSalon';
 import { useBooking } from '../../../hooks/useBooking';
@@ -37,22 +37,6 @@ const NAV_LINKS = [
   { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
-];
-
-const FOOTER_LINKS = {
-  Company: [
-    { label: 'Privacy Policy', to: '/privacy-policy' },
-    { label: 'Terms of Service', to: '/terms-of-service' },
-    { label: 'Contact Us', to: '/contact-us' },
-    { label: 'Careers', to: '/careers' },
-  ],
-};
-
-const SOCIAL_LINKS = [
-  { label: 'Facebook', icon: FaFacebookF },
-  { label: 'Instagram', icon: FaInstagram },
-  { label: 'X', icon: FaXTwitter },
-  { label: 'LinkedIn', icon: FaLinkedinIn },
 ];
 
 const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -134,40 +118,6 @@ function RatingStars({ rating = 0 }) {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="salon-detail-footer">
-      <div className="salon-detail-shell salon-detail-footer-grid">
-        <div className="salon-detail-footer-cta">
-          <h2>Are you ready to<br />get started?</h2>
-          <Link to="/auth/signup">
-            Get Started for free <MdArrowForward />
-          </Link>
-        </div>
-
-        {Object.entries(FOOTER_LINKS).map(([title, links]) => (
-          <div className="salon-detail-footer-links" key={title}>
-            <h3>{title}</h3>
-            {links.map((link) => (
-              <Link key={link.label} to={link.to}>{link.label}</Link>
-            ))}
-          </div>
-        ))}
-
-        <div className="salon-detail-footer-brand"><Brand /></div>
-        <div className="salon-detail-socials">
-          {SOCIAL_LINKS.map(({ label, icon: Icon }) => (
-            <a href="#" aria-label={label} key={label} onClick={(event) => event.preventDefault()}>
-              <Icon />
-            </a>
-          ))}
-        </div>
-      </div>
-      <div className="salon-detail-copyright">©2026 Glow&Cut</div>
-    </footer>
-  );
-}
-
 export default function SalonDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -244,43 +194,51 @@ export default function SalonDetail() {
     };
   }, [id]);
 
+  // Load the salon's published reviews from the backend (GET /reviews/salon/:id,
+  // newest first). Reviews already carry the customer's name/avatar, rating,
+  // comment and date — no client-side aggregation needed.
   useEffect(() => {
-    if (!barbers.length) {
-      if (!loadingBarbers) setLoadingReviews(false);
-      return undefined;
-    }
-
+    if (!id) return undefined;
     let active = true;
     setLoadingReviews(true);
-    Promise.allSettled(
-      barbers.map((barber) => salonService.getBarberReviews(getEntityId(barber)))
-    ).then((results) => {
-      if (!active) return;
 
-      const merged = results.flatMap((result, index) => {
-        if (result.status !== 'fulfilled' || !Array.isArray(result.value)) return [];
-        return result.value.map((review) => ({ ...review, barber: barbers[index] }));
+    salonService
+      .getSalonReviews(id)
+      .then((list) => {
+        if (!active) return;
+        setReviews(Array.isArray(list) ? list : []);
+        setLoadingReviews(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setReviews([]);
+        setLoadingReviews(false);
       });
-      const unique = merged.filter((review, index, list) => {
-        const reviewId = getEntityId(review);
-        return !reviewId || list.findIndex((item) => getEntityId(item) === reviewId) === index;
-      });
-      setReviews(unique);
-      setLoadingReviews(false);
-    });
 
     return () => {
       active = false;
     };
-  }, [barbers, loadingBarbers]);
+  }, [id]);
 
+  // Keep the selected stylist in sync with the barbers published for THIS
+  // salon. Booking state is app-wide, so without this a barber selected on a
+  // previously viewed salon could carry over and pass the validation below
+  // even though the customer never chose a barber on this page. The clear is
+  // deferred until the barbers fetch settles so a valid in-context selection
+  // is never wiped while data is still loading.
   useEffect(() => {
-    if (!barbers.length || booking.stylist) return;
+    if (!barbers.length) {
+      if (!loadingBarbers && booking.stylist) setStylist(null);
+      return;
+    }
+    const selectedId = getEntityId(booking.stylist);
+    const stillSelected = barbers.some((barber) => getEntityId(barber) === selectedId);
+    if (stillSelected) return;
     const firstAvailable =
       barbers.find((barber) => barber.isAvailable !== false && barber.status !== 'inactive') ||
       barbers[0];
     setStylist(firstAvailable);
-  }, [barbers, booking.stylist, setStylist]);
+  }, [barbers, loadingBarbers, booking.stylist, setStylist]);
 
   const barber = booking.stylist;
   const hasWorkingDaysConfigured = barber?.workingDays && barber.workingDays.length > 0;
@@ -351,7 +309,7 @@ export default function SalonDetail() {
 
   const displayedReviews = useMemo(() => reviews.slice(0, 3), [reviews]);
   const rating = getSalonRating(salon);
-  const reviewCount = Number(salon?.reviewCount ?? salon?.reviewsCount ?? reviews.length ?? 0);
+  const reviewCount = Number(salon?.totalReviews ?? salon?.reviewCount ?? salon?.reviewsCount ?? reviews.length ?? 0);
   const location = getSalonLocation(salon);
   const startingPrice = services.length
     ? Math.min(...services.map((service) => Number(service.price) || 0))
@@ -397,7 +355,7 @@ export default function SalonDetail() {
       return;
     }
     if (!booking.stylist) {
-      toast.error('Please choose a stylist');
+      toast.error('Please select a barber before continuing.');
       return;
     }
     if (!selectedSlot) {
@@ -700,7 +658,18 @@ export default function SalonDetail() {
                         <RatingStars rating={Number(review.rating) || 0} />
                         <p>{review.comment || review.review || 'A wonderful salon experience.'}</p>
                         <div>
-                          <span>{author.charAt(0).toUpperCase()}</span>
+                          <span className="salon-detail-review-avatar">
+                            {author.charAt(0).toUpperCase()}
+                            {review.user?.profileImage && (
+                              <img
+                                src={review.user.profileImage}
+                                alt={author}
+                                onError={(event) => {
+                                  event.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            )}
+                          </span>
                           <p>
                             <strong>{author}</strong>
                             <small>{review.barber?.name || 'Verified visit'} · {review.createdAt
@@ -713,7 +682,7 @@ export default function SalonDetail() {
                   })}
                 </div>
               ) : (
-                <p className="salon-detail-empty">No client reviews have been published yet.</p>
+                <p className="salon-detail-empty">No reviews yet.</p>
               )}
 
               <div className="salon-detail-review-footer">
