@@ -12,7 +12,6 @@ import {
   MdLocationOn,
   MdMenu,
   MdPhone,
-  MdSearch,
   MdShare,
   MdStar,
 } from 'react-icons/md';
@@ -35,7 +34,7 @@ import './SalonDetail.css';
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
   { label: 'Salon & Service', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -434,11 +433,8 @@ export default function SalonDetail() {
           ))}
         </nav>
         <div className="salon-detail-header-actions">
-          <button type="button" className="salon-detail-book-button header-cta" onClick={scrollToBooking}>
+          <button type="button" className="salon-detail-book-button header-cta" onClick={() => navigate('/services')}>
             Book Now <MdArrowForward />
-          </button>
-          <button type="button" className="salon-detail-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
-            <MdSearch />
           </button>
           {userType === 'authenticated' && (
             <button type="button" className="salon-detail-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>

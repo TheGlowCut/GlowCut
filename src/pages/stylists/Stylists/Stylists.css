@@ -102,25 +102,6 @@
   gap: 12px;
 }
 
-.stylists-header-search {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border: 1px solid rgba(228, 187, 97, 0.45);
-  border-radius: 50%;
-  background: #11141a;
-  color: #f8f5ee;
-  cursor: pointer;
-  transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
-}
-
-.stylists-header-search:hover {
-  border-color: var(--stylists-gold);
-  color: var(--stylists-gold);
-  transform: translateY(-2px);
-}
-
 .stylists-header-profile {
   display: flex;
   align-items: center;

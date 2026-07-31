@@ -147,7 +147,7 @@ export default function LiveChat() {
           </div>
         </div>
         <button
-          onClick={() => navigate('/booking/confirm')}
+          onClick={() => navigate('/services')}
           className="bg-primary text-on-primary font-sora font-bold px-md py-sm rounded-lg shadow-warm-sm active:scale-95 transition-all"
         >
           Book Now

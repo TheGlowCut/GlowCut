@@ -8,7 +8,6 @@ import {
   MdLocationOn,
   MdMenu,
   MdRefresh,
-  MdSearch,
   MdStar,
   MdAccessTime,
   MdStore,
@@ -32,7 +31,7 @@ import './Services.css';
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
   { label: 'Salon & Service', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -272,12 +271,9 @@ export default function Services() {
             ))}
           </nav>
           <div className="services-header-actions">
-            <GoldButton className="services-header-cta" onClick={() => navigate('/salons/nearby')}>
+            <GoldButton className="services-header-cta" onClick={() => navigate('/services')}>
               Book Now
             </GoldButton>
-            <button type="button" className="services-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
-              <MdSearch />
-            </button>
             {userType === 'authenticated' && (
               <button type="button" className="services-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
                 <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="services-profile-avatar" />
@@ -327,7 +323,7 @@ export default function Services() {
                 <GoldButton
                   onClick={() => {
                     setMobileOpen(false);
-                    navigate('/salons/nearby');
+                    navigate('/services');
                   }}
                 >
                   Book Now

@@ -7,7 +7,6 @@ import {
   MdMenu,
   MdPeople,
   MdRefresh,
-  MdSearch,
   MdStar,
 } from 'react-icons/md';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
@@ -23,7 +22,7 @@ import './Stylists.css';
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
   { label: 'Salon & Service', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -285,13 +284,10 @@ export default function Stylists() {
           <div className="stylists-header-actions">
             <GoldButton
               className="stylists-header-cta"
-              onClick={() => navigate('/salons/nearby')}
+              onClick={() => navigate('/services')}
             >
               Book Now
             </GoldButton>
-            <button type="button" className="stylists-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
-              <MdSearch />
-            </button>
             {userType === 'authenticated' && (                <button type="button" className="stylists-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
                 <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="stylists-profile-avatar" />
               </button>
@@ -344,7 +340,7 @@ export default function Stylists() {
                 <GoldButton
                   onClick={() => {
                     setMobileOpen(false);
-                    navigate('/salons/nearby');
+                    navigate('/services');
                   }}
                 >
                   Book Now

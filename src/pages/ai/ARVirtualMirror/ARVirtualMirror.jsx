@@ -37,7 +37,7 @@ const STYLES = [
 
 const NAV_ITEMS = [
   { label: 'AR Mirror', icon: MdVisibility, active: true },
-  { label: 'Stylists', icon: MdContentCut, to: '/stylists' },
+  { label: 'Salon & Barbers', icon: MdContentCut, to: '/stylists' },
   { label: 'Services', icon: MdAutoAwesome, to: '/services' },
   { label: 'Gallery', icon: MdAutoStories, to: '/salons/style-gallery' },
 ];
@@ -233,7 +233,7 @@ export default function ARVirtualMirror() {
                   className="text-2xl"
                   style={item.active ? { fontVariationSettings: "'FILL' 1" } : undefined}
                 />
-                <span className="font-label-md text-label-md">{item.label}</span>
+                <span className="font-label-md text-label-md whitespace-nowrap">{item.label}</span>
                 {item.active && <div className="w-1 h-1 bg-primary rounded-full mt-1" />}
               </button>
             );

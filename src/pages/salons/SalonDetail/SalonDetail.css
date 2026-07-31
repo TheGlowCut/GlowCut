@@ -109,25 +109,6 @@
   gap: 12px;
 }
 
-.salon-detail-header-search {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border: 1px solid rgba(226, 184, 94, 0.45);
-  border-radius: 50%;
-  background: #11151d;
-  color: #faf7ef;
-  cursor: pointer;
-  transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
-}
-
-.salon-detail-header-search:hover {
-  border-color: var(--detail-gold);
-  color: var(--detail-gold);
-  transform: translateY(-2px);
-}
-
 .salon-detail-header-profile {
   display: flex;
   align-items: center;
