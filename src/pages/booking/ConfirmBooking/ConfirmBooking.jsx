@@ -9,7 +9,6 @@ import BookingFlowShell from '../BookingFlow/BookingFlowShell';
 import {
   formatBookingMoment,
   formatCurrency,
-  getFirstAvailableBarber,
   getSalonQuery,
   normalizeService,
 } from '../BookingFlow/bookingFlowUtils';
@@ -65,9 +64,16 @@ export default function ConfirmBooking() {
         }
       }
 
-      if (!booking.stylist && barberResult.status === 'fulfilled' && Array.isArray(barberResult.value)) {
-        const defaultBarber = getFirstAvailableBarber(barberResult.value);
-        if (defaultBarber) setStylist(defaultBarber);
+      if (
+        booking.stylist &&
+        barberResult.status === 'fulfilled' &&
+        Array.isArray(barberResult.value)
+      ) {
+        const salonBarbers = barberResult.value;
+        const stylistId = booking.stylist?._id || booking.stylist?.id || '';
+        const stylistInSalon =
+          stylistId && salonBarbers.some((barber) => (barber?._id || barber?.id) === stylistId);
+        if (!stylistInSalon) setStylist(null);
       }
     });
 
@@ -95,7 +101,7 @@ export default function ConfirmBooking() {
       return;
     }
     if (!barberId) {
-      toast.error('A stylist is required before you confirm booking.');
+      toast.error('A barber is required before you confirm booking.');
       return;
     }
     if (!booking.date || !booking.timeSlot) {

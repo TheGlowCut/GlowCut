@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -190,6 +190,9 @@ export default function SalonDetail() {
   const [guestBlockOpen, setGuestBlockOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [savingSalon, setSavingSalon] = useState(false);
+  const [highlightBarbers, setHighlightBarbers] = useState(false);
+  const barberHighlightTimer = useRef(null);
+  const barberHighlightFrame = useRef(null);
   const profileAvatar =
     user?.profileImage || user?.avatar || profile?.profileImage || profile?.avatar;
 
@@ -224,6 +227,7 @@ export default function SalonDetail() {
     if (!id) return undefined;
     let active = true;
 
+    setLoadingBarbers(true);
     Promise.allSettled([
       salonService.getSalonServices(id),
       salonService.getSalonBarbers(id),
@@ -274,13 +278,18 @@ export default function SalonDetail() {
     };
   }, [barbers, loadingBarbers]);
 
+  // Never auto-select a stylist — the user must pick one explicitly from the
+  // team section. The booking context keeps its stylist between visits, so a
+  // barber picked on a previous salon would silently stay selected (and
+  // Continue booking would create a booking for the WRONG barber). If the
+  // current stylist doesn't belong to this salon, clear it so the "select a
+  // stylist" error shows instead of proceeding blindly.
   useEffect(() => {
-    if (!barbers.length || booking.stylist) return;
-    const firstAvailable =
-      barbers.find((barber) => barber.isAvailable !== false && barber.status !== 'inactive') ||
-      barbers[0];
-    setStylist(firstAvailable);
-  }, [barbers, booking.stylist, setStylist]);
+    if (loadingBarbers || !booking.stylist) return;
+    const stylistId = getEntityId(booking.stylist);
+    if (barbers.some((barber) => getEntityId(barber) === stylistId)) return;
+    setStylist(null);
+  }, [barbers, loadingBarbers, booking.stylist, setStylist]);
 
   const barber = booking.stylist;
   const hasWorkingDaysConfigured = barber?.workingDays && barber.workingDays.length > 0;
@@ -288,6 +297,16 @@ export default function SalonDetail() {
 
   useEffect(() => {
     if (!id) return undefined;
+    if (!booking.stylist) {
+      // Barbers may still be loading — a stylist can be auto-selected any
+      // moment, so keep the skeleton. Once loaded with no stylist, stop and
+      // show the clear "no stylist" message.
+      if (loadingBarbers) return undefined;
+      setSlots([]);
+      setSelectedSlot('');
+      setLoadingSlots(false);
+      return undefined;
+    }
     let active = true;
     setLoadingSlots(true);
     const barberId = getEntityId(booking.stylist);
@@ -327,7 +346,7 @@ export default function SalonDetail() {
     return () => {
       active = false;
     };
-  }, [id, booking.stylist, dates, selectedDate]);
+  }, [id, booking.stylist, loadingBarbers, dates, selectedDate]);
 
   const galleryImages = useMemo(() => {
     if (!salon) return [landingHero, loginShowcase, landingHero];
@@ -386,6 +405,33 @@ export default function SalonDetail() {
     });
   };
 
+  // When the user tries to book without a barber, flash a red border around
+  // the barber cards for one second so the eye is drawn to the team section.
+  const flashBarberSelection = () => {
+    document.getElementById('salon-team')?.scrollIntoView({ behavior: 'smooth' });
+    window.clearTimeout(barberHighlightTimer.current);
+    window.cancelAnimationFrame(barberHighlightFrame.current);
+    // Toggle the class off and on so rapid repeated clicks replay the pulse
+    // animation instead of keeping a static red border.
+    setHighlightBarbers(false);
+    barberHighlightFrame.current = requestAnimationFrame(() => {
+      setHighlightBarbers(true);
+      barberHighlightTimer.current = window.setTimeout(() => setHighlightBarbers(false), 1000);
+    });
+  };
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(barberHighlightTimer.current);
+      window.cancelAnimationFrame(barberHighlightFrame.current);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (booking.stylist) setHighlightBarbers(false);
+  }, [booking.stylist]);
+
   const handleConfirm = () => {
     if (userType === 'guest') {
       setGuestBlockOpen(true);
@@ -396,8 +442,19 @@ export default function SalonDetail() {
       document.getElementById('salon-services')?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
+    if (!barbers.length && !loadingBarbers) {
+      toast.error('This salon has no barbers available, so booking is currently unavailable.');
+      flashBarberSelection();
+      return;
+    }
     if (!booking.stylist) {
-      toast.error('Please choose a stylist');
+      toast.error('Please choose a barber first');
+      flashBarberSelection();
+      return;
+    }
+    if (!barbers.some((barber) => getEntityId(barber) === getEntityId(booking.stylist))) {
+      toast.error('Please choose a barber from this salon');
+      flashBarberSelection();
       return;
     }
     if (!selectedSlot) {
@@ -617,7 +674,7 @@ export default function SalonDetail() {
               )}
             </section>
 
-            <section className="salon-detail-team">
+            <section className="salon-detail-team" id="salon-team">
               <h2>Meet the team</h2>
               {loadingBarbers ? (
                 <div className="salon-detail-team-grid">
@@ -633,7 +690,9 @@ export default function SalonDetail() {
                     return (
                       <button
                         type="button"
-                        className={`salon-detail-team-card ${selected ? 'selected' : ''}`}
+                        className={`salon-detail-team-card ${selected ? 'selected' : ''} ${
+                          highlightBarbers ? 'salon-detail-team-card-error' : ''
+                        }`}
                         key={barberId}
                         onClick={() => setStylist(barber)}
                       >
@@ -653,7 +712,9 @@ export default function SalonDetail() {
                   })}
                 </div>
               ) : (
-                <p className="salon-detail-empty">This salon has not added its specialists yet.</p>
+                <p className="salon-detail-empty">
+                  This salon has no barbers yet, so online booking isn't available here.
+                </p>
               )}
             </section>
 
@@ -773,12 +834,28 @@ export default function SalonDetail() {
                   ))}
             </div>
             {!loadingSlots && !slots.length && (
-              <p className="salon-detail-no-slots">No slots available for this day.</p>
+              <p className="salon-detail-no-slots">
+                {!loadingBarbers && !barbers.length
+                  ? 'No barbers in this salon — booking is unavailable here.'
+                  : !loadingBarbers && !booking.stylist
+                    ? 'Select a barber to see available slots.'
+                    : 'No slots available for this day.'}
+              </p>
             )}
             <div className="salon-detail-booking-price">
               <span>{booking.services.length ? 'Selected total' : 'Starting from'}</span>
               <strong>Rs {(booking.services.length ? totalPrice : startingPrice).toLocaleString()}</strong>
             </div>
+            {!loadingBarbers && !booking.stylist && (
+              <div className="salon-detail-booking-error" role="alert">
+                <strong>{barbers.length ? 'Select a barber' : 'No barber available'}</strong>
+                <span>
+                  {barbers.length
+                    ? 'Please choose a barber from the team section above to continue booking.'
+                    : 'This salon has no barbers, so booking is unavailable here. Please explore another salon.'}
+                </span>
+              </div>
+            )}
             <button type="button" className="salon-detail-continue" onClick={handleConfirm}>
               Continue booking <MdArrowForward />
             </button>
