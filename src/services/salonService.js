@@ -158,3 +158,20 @@ export async function getBarberReviews(barberId) {
   const { data } = await apiClient.get(`/reviews/${barberId}`);
   return data.data?.reviews ?? data.data ?? [];
 }
+
+// --- Saved salons (user bookmarks). Backend routes live under
+// /api/auth/* (see user.route.js) and require an authenticated user. ---
+export async function getSavedSalons() {
+  const { data } = await apiClient.get('/auth/saved-salons');
+  return data.data ?? [];
+}
+
+export async function saveSalon(salonId) {
+  const { data } = await apiClient.post(`/auth/save-salon/${salonId}`);
+  return data.data;
+}
+
+export async function unsaveSalon(salonId) {
+  const { data } = await apiClient.delete(`/auth/save-salon/${salonId}`);
+  return data.data;
+}
