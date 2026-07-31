@@ -292,6 +292,32 @@
   font-size: 17px;
 }
 
+.salon-detail-actions > button.is-saved {
+  border-color: var(--detail-gold);
+  color: var(--detail-gold);
+  background: rgba(239, 200, 114, 0.12);
+}
+
+.salon-detail-actions > button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.salon-detail-save-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: salon-detail-spin 700ms linear infinite;
+}
+
+@keyframes salon-detail-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .salon-detail-services,
 .salon-detail-team {
   padding-top: 46px;
