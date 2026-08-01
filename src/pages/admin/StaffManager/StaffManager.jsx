@@ -222,7 +222,7 @@ export default function StaffManager() {
 
       <div className="grid grid-cols-2 lg:grid-cols-12 gap-10">
         <motion.section variants={fadeUp} className="lg:col-span-6">
-          <div className="bg-surface-container/60 backdrop-blur-2xl rounded-3xl p-2xl space-y-xl sticky top-6 max-h-[90vh] overflow-y-auto border border-primary/10 shadow-soft">
+          <div className="bg-surface-container/60 backdrop-blur-2xl rounded-3xl p-lg space-y-xl sticky top-6 max-h-[90vh] overflow-y-auto border border-primary/10 shadow-soft">
             <div className="flex justify-between items-center border-b border-primary/10 pb-5">
               <h3 className="font-headline-md text-headline-sm text-on-surface flex items-center gap-2">
                 {editingBarber ? <><MdEdit className="text-primary text-xl" /> Edit Staff</> : <><MdPersonAdd className="text-primary text-xl" /> Register Staff</>}
@@ -349,7 +349,7 @@ export default function StaffManager() {
               </div>
             ) : (
               barbers.map(barber => (
-                <div key={barber._id} className="bg-surface-container/60 backdrop-blur-2xl rounded-3xl p-2xl border border-primary/10 shadow-soft hover:shadow-warm transition-all duration-300 flex flex-col justify-between relative overflow-hidden w-full">
+                <div key={barber._id} className="bg-surface-container/60 backdrop-blur-2xl rounded-3xl p-lg border border-primary/10 shadow-soft hover:shadow-warm transition-all duration-300 flex flex-col justify-between relative overflow-hidden w-full">
                   <div>
                     <div className="flex items-start gap-5 w-full">
                       <img
