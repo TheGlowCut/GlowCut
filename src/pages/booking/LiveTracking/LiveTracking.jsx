@@ -129,7 +129,7 @@ export default function LiveTracking() {
               onClick={() =>
                 liveBooking?.barberId?.phone
                   ? (window.location.href = `tel:${liveBooking.barberId.phone}`)
-                  : toast.error('No phone number on file for this stylist.')
+                  : toast.error('No phone number on file for this barber.')
               }
               className="flex items-center justify-center gap-2 py-4 px-4 rounded-xl bg-surface-container border border-white/10 text-on-surface-variant font-label-md hover:bg-white/5 transition-all active:scale-95 duration-200"
             >
