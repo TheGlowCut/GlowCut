@@ -207,7 +207,7 @@ export default function ProfileSettings() {
             <MdAddAPhoto className="text-on-primary text-base" />
           </button>
           {profile?.role === 'owner' || profile?.role === 'admin' ? (
-            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-primary/20 text-primary px-sm py-1 rounded-full flex items-center gap-xs shadow-warm-sm whitespace-nowrap border border-primary/30">
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-primary/20 text-primary px-sm py-1 rounded-full flex items-center gap-xs shadow-warm-sm whitespace-nowrap border border-primary/30">
               <MdWorkspacePremium className="text-[16px]" />
               <span className="font-label-md text-label-md capitalize">{profile.role}</span>
             </div>
