@@ -8,6 +8,7 @@ import {
   MdClose,
   MdContentCut,
   MdCreditCard,
+  MdDownload,
   MdLocationOn,
   MdMenu,
   MdOutlineSpa,
@@ -217,6 +218,15 @@ export default function Home() {
                   >
                     Book Now
                   </GoldButton>
+                  <a
+                    href="/app-release.apk"
+                    download="app-release.apk"
+                    className="home-download-app-mobile"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <MdDownload />
+                    <span>Download Our App</span>
+                  </a>
                 </motion.aside>
               </>
             )}
@@ -269,6 +279,15 @@ export default function Home() {
                 </span>
               ))}
             </div> */}
+
+            <a
+              href="/app-release.apk"
+              download="app-release.apk"
+              className="home-download-app"
+            >
+              <MdDownload />
+              <span>Download Our App</span>
+            </a>
           </div>
 
         </div>
@@ -538,6 +557,14 @@ export default function Home() {
             <div className="home-footer-cta">
               <h2>Are you ready to get started?</h2>
               <GoldButton onClick={() => navigate('/auth/signup')}>Get Started for free</GoldButton>
+              <a
+                href="/app-release.apk"
+                download="app-release.apk"
+                className="home-download-app-footer"
+              >
+                <MdDownload />
+                <span>Download Our App</span>
+              </a>
             </div>
 
             {Object.entries(FOOTER_LINKS).map(([title, links]) => (
