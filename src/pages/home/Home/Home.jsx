@@ -223,15 +223,6 @@ export default function Home() {
                   >
                     Book Now
                   </GoldButton>
-                  <a
-                    href="/app-release.apk"
-                    download="app-release.apk"
-                    className="home-download-app-mobile"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <MdDownload />
-                    <span>Download Our App</span>
-                  </a>
                 </motion.aside>
               </>
             )}

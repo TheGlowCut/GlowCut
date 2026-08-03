@@ -1103,8 +1103,7 @@
 
 /* Shared download button styles */
 .home-download-app,
-.home-download-app-footer,
-.home-download-app-mobile {
+.home-download-app-footer {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -1121,8 +1120,7 @@
 }
 
 .home-download-app:hover,
-.home-download-app-footer:hover,
-.home-download-app-mobile:hover {
+.home-download-app-footer:hover {
   background: var(--home-gold);
   color: #15130e;
   transform: translateY(-3px);
@@ -1130,15 +1128,13 @@
 }
 
 .home-download-app svg,
-.home-download-app-footer svg,
-.home-download-app-mobile svg {
+.home-download-app-footer svg {
   font-size: 20px;
   transition: transform 250ms ease;
 }
 
 .home-download-app:hover svg,
-.home-download-app-footer:hover svg,
-.home-download-app-mobile:hover svg {
+.home-download-app-footer:hover svg {
   transform: translateY(2px);
 }
 
@@ -1286,6 +1282,12 @@
   .home-side-stylists > article {
     min-height: 430px;
   }
+
+  /* Hide download app buttons on mobile & tablet — show only on laptop+ */
+  .home-download-app,
+  .home-download-app-footer {
+    display: none;
+  }
 }
 
 @media (max-width: 820px) {
@@ -1383,20 +1385,9 @@
     margin-top: 6px;
   }
 
-  .home-download-app-mobile {
-    margin-top: 8px;
-    padding: 12px 14px;
-    border-radius: 12px;
-  }
-
   .home-hero-copy {
     width: min(100%, 580px);
     padding-top: 35px;
-  }
-
-  .home-download-app {
-    width: 100%;
-    justify-content: center;
   }
 
   .home-hero-copy h1 {
