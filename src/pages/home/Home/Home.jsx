@@ -144,6 +144,22 @@ export default function Home() {
     navigate(query ? `/salons/nearby?area=${encodeURIComponent(query)}` : '/salons/nearby');
   };
 
+  // "Get Started" CTA is auth-aware: logged-in users go to their dashboard
+  // (owner/admin) or the services page (customer) instead of being sent back
+  // to the signup page. Guests / not-logged-in users go to signup as before.
+  const handleGetStarted = () => {
+    if (userType === 'authenticated') {
+      const role = profile?.role;
+      if (role === 'admin' || role === 'owner' || role === 'superadmin') {
+        navigate(profile?.hasSalon ? '/admin/shop' : '/setup-salon');
+      } else {
+        navigate('/services');
+      }
+      return;
+    }
+    navigate('/auth/signup');
+  };
+
   return (
     <main className="glow-home">
       <section className="home-hero" style={{ '--hero-image': `url(${landingHero})` }}>
@@ -537,7 +553,7 @@ export default function Home() {
           <div className="home-footer-grid">
             <div className="home-footer-cta">
               <h2>Are you ready to get started?</h2>
-              <GoldButton onClick={() => navigate('/auth/signup')}>Get Started for free</GoldButton>
+              <GoldButton onClick={handleGetStarted}>Get Started for free</GoldButton>
             </div>
 
             {Object.entries(FOOTER_LINKS).map(([title, links]) => (

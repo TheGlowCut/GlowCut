@@ -252,6 +252,22 @@ export default function Services() {
     return rem ? `${hrs}h ${rem}m` : `${hrs}h`;
   };
 
+  // "Get Started" CTA is auth-aware: logged-in users go to their dashboard
+  // (owner/admin) or the services page (customer) instead of being sent back
+  // to the signup page. Guests / not-logged-in users go to signup as before.
+  const handleGetStarted = () => {
+    if (userType === 'authenticated') {
+      const role = profile?.role;
+      if (role === 'admin' || role === 'owner' || role === 'superadmin') {
+        navigate(profile?.hasSalon ? '/admin/shop' : '/setup-salon');
+      } else {
+        navigate('/services');
+      }
+      return;
+    }
+    navigate('/auth/signup');
+  };
+
   // ── Render ──
 
   return (
@@ -600,7 +616,7 @@ export default function Services() {
           <div className="services-footer-grid">
             <div className="services-footer-cta">
               <h2>Are you ready to get started?</h2>
-              <GoldButton onClick={() => navigate('/auth/signup')}>Get Started for free</GoldButton>
+              <GoldButton onClick={handleGetStarted}>Get Started for free</GoldButton>
             </div>
             {Object.entries(FOOTER_LINKS).map(([title, links]) => (
               <div className="services-footer-links" key={title}>
