@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -12,7 +12,6 @@ import {
   MdLocationOn,
   MdMenu,
   MdPhone,
-  MdSearch,
   MdShare,
   MdStar,
 } from 'react-icons/md';
@@ -34,8 +33,8 @@ import './SalonDetail.css';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'Salon & Service', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salons & Service', to: '/services' },
+  { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -56,15 +55,21 @@ const SOCIAL_LINKS = [
   { label: 'LinkedIn', icon: FaLinkedinIn },
 ];
 
-const buildDates = () =>
-  Array.from({ length: 2 }, (_, index) => {
-    const date = new Date();
-    date.setDate(date.getDate() + index);
-    return {
-      label: index === 0 ? 'Today' : 'Tomorrow',
-      iso: date.toISOString().split('T')[0],
-    };
-  });
+const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+const generateUpcomingDays = () => {
+  const result = [];
+  const today = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const isoDate = d.toISOString().split('T')[0];
+    const dayEnum = dayNames[d.getDay()];
+    let label = i === 0 ? "Today" : i === 1 ? "Tomorrow" : dayEnum;
+    result.push({ isoDate, label, dayEnum, dateText: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) });
+  }
+  return result;
+};
 
 const getEntityId = (entity) => entity?._id || entity?.id || '';
 
@@ -168,9 +173,9 @@ export default function SalonDetail() {
   const navigate = useNavigate();
   const { user, profile, userType } = useContext(AuthContext);
   const { salon, isLoading, error } = useSalon(id);
-  const { booking, setSalon, toggleService, setStylist, setTimeSlot, totalPrice } = useBooking();
+  const { booking, setSalon, setServices: setBookingServices, toggleService, setStylist, setTimeSlot } = useBooking();
 
-  const [dates] = useState(buildDates);
+  const [dates] = useState(generateUpcomingDays);
   const [selectedDate, setSelectedDate] = useState(0);
   const [services, setServices] = useState([]);
   const [barbers, setBarbers] = useState([]);
@@ -184,17 +189,60 @@ export default function SalonDetail() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [guestBlockOpen, setGuestBlockOpen] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [savingSalon, setSavingSalon] = useState(false);
+  const [highlightBarbers, setHighlightBarbers] = useState(false);
+  const barberHighlightTimer = useRef(null);
+  const barberHighlightFrame = useRef(null);
   const profileAvatar =
     user?.profileImage || user?.avatar || profile?.profileImage || profile?.avatar;
 
+  // Switching to a different salon must start a fresh selection. The booking
+  // context keeps services/barber/date between visits, so without a reset the
+  // previous salon's selected services (and their total price) would leak into
+  // the new salon's "Book a visit" sidebar — and Continue booking could even
+  // create a booking with the WRONG salon's services. Detect the salon change
+  // here and clear the stale selection before the new salon is registered.
   useEffect(() => {
-    if (salon) setSalon(salon);
-  }, [salon, setSalon]);
+    if (!salon) return;
+    const currentSalonId = getEntityId(booking.salon);
+    if (currentSalonId && currentSalonId !== getEntityId(salon)) {
+      setBookingServices([]);
+      setStylist(null);
+      setTimeSlot(null, null, null);
+      setSelectedDate(0);
+      setSelectedSlot('');
+    }
+    setSalon(salon);
+  }, [salon, setSalon, setBookingServices, setStylist, setTimeSlot]);
+
+  // Restore the saved state for this salon from the backend once the user
+  // is authenticated (guests always start unsaved). The profile payload
+  // (publicUser.savedSalonIds) gives an instant hint; the fetch keeps it
+  // accurate even if the profile is stale.
+  useEffect(() => {
+    if (userType !== 'authenticated' || !id) return undefined;
+    let active = true;
+    if (profile?.savedSalonIds?.includes(id)) setSaved(true);
+    salonService
+      .getSavedSalons()
+      .then((list) => {
+        if (!active) return;
+        const ids = new Set(Array.isArray(list) ? list.map(getEntityId) : []);
+        setSaved(ids.has(id));
+      })
+      .catch(() => {
+        // Non-critical — leave the button in its default (unsaved) state.
+      });
+    return () => {
+      active = false;
+    };
+  }, [id, userType, profile?.savedSalonIds]);
 
   useEffect(() => {
     if (!id) return undefined;
     let active = true;
 
+    setLoadingBarbers(true);
     Promise.allSettled([
       salonService.getSalonServices(id),
       salonService.getSalonBarbers(id),
@@ -245,30 +293,60 @@ export default function SalonDetail() {
     };
   }, [barbers, loadingBarbers]);
 
+  // Never auto-select a stylist — the user must pick one explicitly from the
+  // team section. The booking context keeps its stylist between visits, so a
+  // barber picked on a previous salon would silently stay selected (and
+  // Continue booking would create a booking for the WRONG barber). If the
+  // current stylist doesn't belong to this salon, clear it so the "select a
+  // stylist" error shows instead of proceeding blindly.
   useEffect(() => {
-    if (!barbers.length || booking.stylist) return;
-    const firstAvailable =
-      barbers.find((barber) => barber.isAvailable !== false && barber.status !== 'inactive') ||
-      barbers[0];
-    setStylist(firstAvailable);
-  }, [barbers, booking.stylist, setStylist]);
+    if (loadingBarbers || !booking.stylist) return;
+    const stylistId = getEntityId(booking.stylist);
+    if (barbers.some((barber) => getEntityId(barber) === stylistId)) return;
+    setStylist(null);
+  }, [barbers, loadingBarbers, booking.stylist, setStylist]);
+
+  const barber = booking.stylist;
+  const hasWorkingDaysConfigured = barber?.workingDays && barber.workingDays.length > 0;
+  const workingDays = hasWorkingDaysConfigured ? barber.workingDays : [];
 
   useEffect(() => {
     if (!id) return undefined;
+    if (!booking.stylist) {
+      // Barbers may still be loading — a stylist can be auto-selected any
+      // moment, so keep the skeleton. Once loaded with no stylist, stop and
+      // show the clear "no stylist" message.
+      if (loadingBarbers) return undefined;
+      setSlots([]);
+      setSelectedSlot('');
+      setLoadingSlots(false);
+      return undefined;
+    }
     let active = true;
     setLoadingSlots(true);
     const barberId = getEntityId(booking.stylist);
 
+    const day = dates[selectedDate];
+    if (hasWorkingDaysConfigured && !workingDays.includes(day.dayEnum)) {
+      if (active) {
+        setSlots([]);
+        setSelectedSlot('');
+        setLoadingSlots(false);
+      }
+      return;
+    }
+
     bookingService
-      .getAvailableTimeSlots(id, barberId, dates[selectedDate].iso)
+      .getAvailableTimeSlots(id, barberId, day.isoDate)
       .then((data) => {
         if (!active) return;
-        const available = Array.isArray(data)
-          ? data.filter((slot) => slot.status === 'available').slice(0, 6)
-          : [];
-        setSlots(available);
+        const list = Array.isArray(data) ? data : [];
+        setSlots(list);
+        const firstAvailable = list.find((slot) => slot.status === 'available');
         setSelectedSlot((current) =>
-          available.some((slot) => slot.time === current) ? current : available[0]?.time || ''
+          list.some((slot) => slot.time === current && slot.status === 'available')
+            ? current
+            : firstAvailable?.time || ''
         );
       })
       .catch(() => {
@@ -283,7 +361,7 @@ export default function SalonDetail() {
     return () => {
       active = false;
     };
-  }, [id, booking.stylist, dates, selectedDate]);
+  }, [id, booking.stylist, loadingBarbers, dates, selectedDate]);
 
   const galleryImages = useMemo(() => {
     if (!salon) return [landingHero, loginShowcase, landingHero];
@@ -312,6 +390,20 @@ export default function SalonDetail() {
   const startingPrice = services.length
     ? Math.min(...services.map((service) => Number(service.price) || 0))
     : 0;
+  // Only services that actually belong to THIS salon count towards the total.
+  // This keeps the sidebar honest even in the brief moment before a stale
+  // selection from a previous salon is cleared after switching salons.
+  const selectedInMenu = useMemo(
+    () =>
+      booking.services.filter((item) =>
+        services.some((service) => getEntityId(service) === getEntityId(item))
+      ),
+    [booking.services, services]
+  );
+  const selectedTotal = selectedInMenu.reduce(
+    (sum, service) => sum + (Number(service.price) || 0),
+    0
+  );
   const selectedStylistId = getEntityId(booking.stylist);
 
   const ratingDistribution = useMemo(() => {
@@ -342,9 +434,51 @@ export default function SalonDetail() {
     });
   };
 
+  // When the user tries to book without a barber, flash a red border around
+  // the barber cards for one second so the eye is drawn to the team section.
+  const flashBarberSelection = () => {
+    document.getElementById('salon-team')?.scrollIntoView({ behavior: 'smooth' });
+    window.clearTimeout(barberHighlightTimer.current);
+    window.cancelAnimationFrame(barberHighlightFrame.current);
+    // Toggle the class off and on so rapid repeated clicks replay the pulse
+    // animation instead of keeping a static red border.
+    setHighlightBarbers(false);
+    barberHighlightFrame.current = requestAnimationFrame(() => {
+      setHighlightBarbers(true);
+      barberHighlightTimer.current = window.setTimeout(() => setHighlightBarbers(false), 1000);
+    });
+  };
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(barberHighlightTimer.current);
+      window.cancelAnimationFrame(barberHighlightFrame.current);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (booking.stylist) setHighlightBarbers(false);
+  }, [booking.stylist]);
+
   const handleConfirm = () => {
     if (userType === 'guest') {
       setGuestBlockOpen(true);
+      return;
+    }
+    // Only flag services as stale once this salon's menu has actually loaded —
+    // while loading, `services` is empty and would wrongly flag everything.
+    const staleSelected = !loadingServices
+      ? booking.services.filter(
+          (item) => !services.some((service) => getEntityId(service) === getEntityId(item))
+        )
+      : [];
+    if (staleSelected.length) {
+      // Services from a previously visited salon are still lingering — drop
+      // them so this salon's booking can never proceed with the wrong services.
+      setBookingServices(selectedInMenu);
+      toast.error('Please select a service from this salon first');
+      document.getElementById('salon-services')?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
     if (!booking.services.length) {
@@ -352,16 +486,54 @@ export default function SalonDetail() {
       document.getElementById('salon-services')?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
+    if (!barbers.length && !loadingBarbers) {
+      toast.error('This salon has no barbers available, so booking is currently unavailable.');
+      flashBarberSelection();
+      return;
+    }
     if (!booking.stylist) {
-      toast.error('Please choose a stylist');
+      toast.error('Please choose a barber first');
+      flashBarberSelection();
+      return;
+    }
+    if (!barbers.some((barber) => getEntityId(barber) === getEntityId(booking.stylist))) {
+      toast.error('Please choose a barber from this salon');
+      flashBarberSelection();
       return;
     }
     if (!selectedSlot) {
       toast.error('Please pick an available time slot');
       return;
     }
-    setTimeSlot(dates[selectedDate].iso, selectedSlot, dates[selectedDate].label);
-    navigate('/booking/confirm');
+
+    const day = dates[selectedDate];
+    setTimeSlot(day.isoDate, selectedSlot, day.label);
+    navigate(`/booking/service?salonId=${encodeURIComponent(id)}`);
+  };
+
+  const handleSave = async () => {
+    if (userType !== 'authenticated') {
+      setGuestBlockOpen(true);
+      return;
+    }
+    if (!id || savingSalon) return;
+
+    setSavingSalon(true);
+    try {
+      if (saved) {
+        await salonService.unsaveSalon(id);
+        setSaved(false);
+        toast.success('Salon removed from your saved salons');
+      } else {
+        await salonService.saveSalon(id);
+        setSaved(true);
+        toast.success('Salon saved to your profile');
+      }
+    } catch (saveError) {
+      toast.error(saveError?.message || 'Could not update saved salons. Please try again.');
+    } finally {
+      setSavingSalon(false);
+    }
   };
 
   const handleShare = async () => {
@@ -411,13 +583,11 @@ export default function SalonDetail() {
           ))}
         </nav>
         <div className="salon-detail-header-actions">
-          <button type="button" className="salon-detail-book-button header-cta" onClick={scrollToBooking}>
+          <button type="button" className="salon-detail-book-button header-cta" onClick={() => navigate('/services')}>
             Book Now <MdArrowForward />
           </button>
-          <button type="button" className="salon-detail-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
-            <MdSearch />
-          </button>
-          {userType === 'authenticated' && (                <button type="button" className="salon-detail-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
+          {userType === 'authenticated' && (
+            <button type="button" className="salon-detail-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
               <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="salon-detail-profile-avatar" />
             </button>
           )}
@@ -500,8 +670,15 @@ export default function SalonDetail() {
                 <button type="button" className="salon-detail-book-button" onClick={scrollToBooking}>
                   Book Now <MdArrowForward />
                 </button>
-                <button type="button" onClick={() => setSaved((current) => !current)}>
-                  {saved ? <MdFavorite /> : <MdFavoriteBorder />} {saved ? 'Saved' : 'Save'}
+                <button type="button" className={saved ? 'is-saved' : ''} disabled={savingSalon} onClick={handleSave}>
+                  {savingSalon ? (
+                    <span className="salon-detail-save-spinner" />
+                  ) : saved ? (
+                    <MdFavorite />
+                  ) : (
+                    <MdFavoriteBorder />
+                  )}{' '}
+                  {saved ? 'Saved' : 'Save'}
                 </button>
                 <button type="button" onClick={handleShare}><MdShare /> Share</button>
                 <a href={salon.phone ? `tel:${salon.phone}` : '#'}><MdPhone /> Call</a>
@@ -541,7 +718,7 @@ export default function SalonDetail() {
               )}
             </section>
 
-            <section className="salon-detail-team">
+            <section className="salon-detail-team" id="salon-team">
               <h2>Meet the team</h2>
               {loadingBarbers ? (
                 <div className="salon-detail-team-grid">
@@ -557,7 +734,9 @@ export default function SalonDetail() {
                     return (
                       <button
                         type="button"
-                        className={`salon-detail-team-card ${selected ? 'selected' : ''}`}
+                        className={`salon-detail-team-card ${selected ? 'selected' : ''} ${
+                          highlightBarbers ? 'salon-detail-team-card-error' : ''
+                        }`}
                         key={barberId}
                         onClick={() => setStylist(barber)}
                       >
@@ -577,7 +756,9 @@ export default function SalonDetail() {
                   })}
                 </div>
               ) : (
-                <p className="salon-detail-empty">This salon has not added its specialists yet.</p>
+                <p className="salon-detail-empty">
+                  This salon has no barbers yet, so online booking isn't available here.
+                </p>
               )}
             </section>
 
@@ -651,40 +832,74 @@ export default function SalonDetail() {
 
           <aside className="salon-detail-booking-card" id="salon-booking">
             <h2>Book a visit</h2>
-            <p>Available slots today & tomorrow</p>
-            <div className="salon-detail-date-switch">
-              {dates.map((date, index) => (
-                <button
-                  type="button"
-                  className={selectedDate === index ? 'active' : ''}
-                  onClick={() => setSelectedDate(index)}
-                  key={date.iso}
-                >
-                  {date.label}
-                </button>
-              ))}
+            <p>Available slots for next 7 days</p>
+            <div className="salon-detail-date-picker">
+              {dates.map((day, index) => {
+                const isAvailable = !hasWorkingDaysConfigured || workingDays.includes(day.dayEnum);
+                const isSelected = selectedDate === index;
+                return (
+                  <button
+                    type="button"
+                    disabled={!isAvailable}
+                    className={`${isSelected ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                    onClick={() => {
+                      if (!isAvailable) {
+                        toast.error(`Barber is not available on ${day.dayEnum}s.`);
+                        return;
+                      }
+                      setSelectedDate(index);
+                      setSelectedSlot('');
+                    }}
+                    key={day.isoDate}
+                  >
+                    <span className="salon-detail-date-label">
+                      {day.label === "Today" || day.label === "Tomorrow" ? day.label : day.dayEnum.slice(0, 3)}
+                    </span>
+                    <span className="salon-detail-date-number">{day.dateText.split(' ')[1]}</span>
+                  </button>
+                );
+              })}
             </div>
             <div className="salon-detail-slots">
               {loadingSlots
-                ? Array.from({ length: 6 }, (_, index) => <i key={index} />)
+                ? Array.from({ length: 10 }, (_, index) => <i key={index} />)
                 : slots.map((slot) => (
                     <button
                       type="button"
-                      className={selectedSlot === slot.time ? 'selected' : ''}
-                      onClick={() => setSelectedSlot(slot.time)}
+                      disabled={slot.status === 'unavailable'}
+                      className={`${selectedSlot === slot.time ? 'selected' : ''} ${slot.status === 'unavailable' ? 'unavailable' : ''}`}
+                      onClick={() => {
+                        if (slot.status === 'available') setSelectedSlot(slot.time);
+                      }}
                       key={slot.time}
                     >
-                      {formatTime(slot.time)}
+                      {slot.time.includes(':') ? formatTime(slot.time) : slot.time}
                     </button>
                   ))}
             </div>
             {!loadingSlots && !slots.length && (
-              <p className="salon-detail-no-slots">No slots available for this day.</p>
+              <p className="salon-detail-no-slots">
+                {!loadingBarbers && !barbers.length
+                  ? 'No barbers in this salon — booking is unavailable here.'
+                  : !loadingBarbers && !booking.stylist
+                    ? 'Select a barber to see available slots.'
+                    : 'No slots available for this day.'}
+              </p>
             )}
             <div className="salon-detail-booking-price">
-              <span>{booking.services.length ? 'Selected total' : 'Starting from'}</span>
-              <strong>Rs {(booking.services.length ? totalPrice : startingPrice).toLocaleString()}</strong>
+              <span>{selectedInMenu.length ? 'Selected total' : 'Starting from'}</span>
+              <strong>Rs {(selectedInMenu.length ? selectedTotal : startingPrice).toLocaleString()}</strong>
             </div>
+            {!loadingBarbers && !booking.stylist && (
+              <div className="salon-detail-booking-error" role="alert">
+                <strong>{barbers.length ? 'Select a barber' : 'No barber available'}</strong>
+                <span>
+                  {barbers.length
+                    ? 'Please choose a barber from the team section above to continue booking.'
+                    : 'This salon has no barbers, so booking is unavailable here. Please explore another salon.'}
+                </span>
+              </div>
+            )}
             <button type="button" className="salon-detail-continue" onClick={handleConfirm}>
               Continue booking <MdArrowForward />
             </button>

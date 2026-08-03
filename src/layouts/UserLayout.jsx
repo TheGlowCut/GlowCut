@@ -8,11 +8,17 @@ import MobileBottomNav from '../components/layout/MobileBottomNav';
 export default function UserLayout() {
   const { pathname } = useLocation();
   const isSalonDetailRoute = /^\/salons\/[^/]+$/.test(pathname);
+  const isBookingShowcaseRoute = [
+    '/booking/service',
+    '/booking/date-time',
+    '/booking/confirm',
+  ].includes(pathname);
   const isMarketingRoute =
     pathname === '/' ||
     pathname === '/services' ||
     pathname === '/stylists' ||
-    isSalonDetailRoute;
+    isSalonDetailRoute ||
+    isBookingShowcaseRoute;
 
   return (
     <div className={`min-h-screen flex flex-col ${isMarketingRoute ? 'bg-[#02050c]' : 'bg-background'}`}>

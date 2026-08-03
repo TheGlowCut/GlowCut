@@ -9,7 +9,6 @@ import BookingFlowShell from '../BookingFlow/BookingFlowShell';
 import {
   buildUpcomingDays,
   formatTimeLabel,
-  getFirstAvailableBarber,
   getSalonQuery,
 } from '../BookingFlow/bookingFlowUtils';
 
@@ -48,9 +47,15 @@ export default function BookingDateTime() {
         setSalon(salonResult.value);
       }
 
-      if (!booking.stylist && barberResult.status === 'fulfilled' && Array.isArray(barberResult.value)) {
-        const defaultBarber = getFirstAvailableBarber(barberResult.value);
-        if (defaultBarber) setStylist(defaultBarber);
+      if (barberResult.status === 'fulfilled' && Array.isArray(barberResult.value)) {
+        const salonBarbers = barberResult.value;
+        const stylistId = booking.stylist?._id || booking.stylist?.id || '';
+        const stylistInSalon =
+          stylistId && salonBarbers.some((barber) => (barber?._id || barber?.id) === stylistId);
+        if (booking.stylist && !stylistInSalon) {
+          // Never auto-select — just drop a stylist picked on another salon.
+          setStylist(null);
+        }
       }
     });
 
@@ -60,7 +65,15 @@ export default function BookingDateTime() {
   }, [booking.salon, booking.stylist, salonId, setSalon, setStylist]);
 
   useEffect(() => {
-    if (!salonId || !booking.stylist || !selectedDate) return;
+    if (!salonId || !selectedDate) return;
+    if (!booking.stylist) {
+      // No stylist for this salon — stop the spinner and let the UI show a
+      // clear error instead of loading forever.
+      setSlots([]);
+      setSelectedSlot('');
+      setLoading(false);
+      return;
+    }
     let active = true;
 
     setLoading(true);
@@ -68,15 +81,18 @@ export default function BookingDateTime() {
       .getAvailableTimeSlots(salonId, booking.stylist._id || booking.stylist.id, selectedDate)
       .then((data) => {
         if (!active) return;
-        const availableSlots = Array.isArray(data)
-          ? data.filter((slot) => slot.status === 'available').slice(0, 8)
-          : [];
-        setSlots(availableSlots);
+        // Show the FULL day of slots (taken/past ones come back as
+        // 'unavailable' and are rendered disabled) — same as the salon page.
+        const allSlots = Array.isArray(data) ? data : [];
+        setSlots(allSlots);
 
         setSelectedSlot((current) => {
-          const nextSlot = availableSlots.some((slot) => slot.time === current)
+          const stillValid = allSlots.some(
+            (slot) => slot.time === current && slot.status === 'available'
+          );
+          const nextSlot = stillValid
             ? current
-            : availableSlots[0]?.time || '';
+            : allSlots.find((slot) => slot.status === 'available')?.time || '';
           if (nextSlot) setTimeSlot(selectedDate, nextSlot, selectedDate);
           return nextSlot;
         });
@@ -101,6 +117,10 @@ export default function BookingDateTime() {
   };
 
   const handleContinue = () => {
+    if (!booking.stylist) {
+      toast.error('No barber is available for this salon. Please restart booking from another salon.');
+      return;
+    }
     if (!selectedSlot) {
       toast.error('Please select an available time slot.');
       return;
@@ -129,19 +149,32 @@ export default function BookingDateTime() {
 
       {loading ? (
         <div className="booking-flow-loading">Loading available slots...</div>
-      ) : slots.length ? (
-        <div className="booking-flow-slot-grid">
-          {slots.map((slot) => (
-            <button
-              key={slot.time}
-              type="button"
-              className={`booking-flow-time-option ${selectedSlot === slot.time ? 'selected' : ''}`}
-              onClick={() => handleTimeSelect(slot.time)}
-            >
-              {formatTimeLabel(slot.time)}
-            </button>
-          ))}
+      ) : !booking.stylist ? (
+        <div className="booking-flow-empty">
+          No barber is available for this salon, so we can't continue the
+          booking. Please go back and choose another salon.
         </div>
+      ) : slots.length ? (
+        <>
+          <div className="booking-flow-slot-grid">
+            {slots.map((slot) => (
+              <button
+                key={slot.time}
+                type="button"
+                disabled={slot.status === 'unavailable'}
+                className={`booking-flow-time-option ${
+                  selectedSlot === slot.time ? 'selected' : ''
+                } ${slot.status === 'unavailable' ? 'unavailable' : ''}`}
+                onClick={() => handleTimeSelect(slot.time)}
+              >
+                {formatTimeLabel(slot.time)}
+              </button>
+            ))}
+          </div>
+          {!slots.some((slot) => slot.status === 'available') && (
+            <div className="booking-flow-empty">No available slots for the selected date.</div>
+          )}
+        </>
       ) : (
         <div className="booking-flow-empty">No available slots for the selected date.</div>
       )}
@@ -161,4 +194,3 @@ export default function BookingDateTime() {
     </BookingFlowShell>
   );
 }
-

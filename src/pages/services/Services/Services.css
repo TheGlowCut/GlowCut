@@ -102,6 +102,18 @@
   background: #efc872;
 }
 
+.services-gold-button:disabled {
+  background: #4a4b50;
+  color: #9b9ca1;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.services-gold-button:disabled:hover {
+  transform: none;
+  background: #4a4b50;
+}
+
 .services-gold-button svg {
   font-size: 15px;
 }
@@ -116,25 +128,6 @@
   align-items: center;
   justify-self: end;
   gap: 10px;
-}
-
-.services-header-search {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border: 1px solid rgba(228, 187, 97, 0.45);
-  border-radius: 50%;
-  background: #11141a;
-  color: #f8f5ed;
-  cursor: pointer;
-  transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
-}
-
-.services-header-search:hover {
-  border-color: var(--services-gold);
-  color: var(--services-gold);
-  transform: translateY(-2px);
 }
 
 .services-header-profile {

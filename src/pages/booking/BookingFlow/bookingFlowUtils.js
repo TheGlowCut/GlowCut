@@ -2,8 +2,8 @@ import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/
 
 export const NAV_LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'Salon & Service', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salons & Service', to: '/services' },
+  { label: 'Salons& Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
 ];
 
@@ -13,13 +13,6 @@ export const FOOTER_LINKS = {
     { label: 'Careers', to: '/careers' },
     { label: 'Privacy Policy', to: '/privacy-policy' },
     { label: 'Terms and Conditions', to: '/terms-of-service' },
-  ],
-  Features: [
-    { label: 'Online Booking', to: '/services' },
-    { label: 'Sales & Payments', to: '/services' },
-    { label: 'Marketing & Automation', to: '/stylists' },
-    { label: 'Reporting', to: '/profile' },
-    { label: 'Mini-CRM', to: '/support/help' },
   ],
 };
 
@@ -62,7 +55,18 @@ export const formatTimeLabel = (time) => {
   if (!Number.isFinite(hour)) return time;
   const suffix = hour >= 12 ? 'PM' : 'AM';
   const displayHour = hour % 12 || 12;
-  return `${displayHour}:${minute}`;
+  return `${displayHour}:${minute} ${suffix}`;
+};
+
+// Local calendar date (YYYY-MM-DD) for a Date. The backend stores bookingDate
+// as local midnight, so the payload must use the same local calendar day the
+// customer sees — date.toISOString() would shift the day backwards for
+// UTC+ timezones during the early hours and cause "past date" errors.
+const toISODate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 export const buildUpcomingDays = (count = 7) =>
@@ -70,7 +74,7 @@ export const buildUpcomingDays = (count = 7) =>
     const date = new Date();
     date.setDate(date.getDate() + index);
     return {
-      iso: date.toISOString().split('T')[0],
+      iso: toISODate(date),
       weekdayShort: date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
       dayNumber: date.toLocaleDateString('en-US', { day: 'numeric' }),
     };
@@ -81,9 +85,7 @@ export const formatBookingMoment = (isoDate, time) => {
   const date = new Date(`${isoDate}T00:00:00`);
   const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
   if (!time) return dayLabel;
-  const [hourString] = time.split(':');
-  const suffix = Number(hourString) >= 12 ? 'PM' : 'AM';
-  return `${dayLabel}, ${formatTimeLabel(time)} ${suffix}`;
+  return `${dayLabel}, ${formatTimeLabel(time)}`;
 };
 
 export const getFirstAvailableBarber = (barbers = []) =>

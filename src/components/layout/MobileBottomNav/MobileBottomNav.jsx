@@ -5,7 +5,7 @@ import { MdExplore, MdCalendarMonth, MdPerson, MdContentCut, MdPeople } from 're
 const TABS = [
   { label: 'Explore', to: '/', icon: MdExplore },
   { label: 'Services', to: '/services', icon: MdContentCut },
-  { label: 'Stylists', to: '/stylists', icon: MdPeople },
+  { label: 'Salon & Barbers', to: '/stylists', icon: MdPeople },
   { label: 'Book', to: '/salons/nearby', icon: MdCalendarMonth },
   { label: 'Profile', to: '/profile', icon: MdPerson },
 ];
@@ -30,7 +30,7 @@ export default function MobileBottomNav() {
                 <span className="absolute -top-1 w-1 h-1 rounded-full bg-primary" />
               )}
               <Icon className="text-2xl" />
-              <span className="text-[10px] font-bold">{label}</span>
+              <span className="text-[10px] font-bold whitespace-nowrap">{label}</span>
             </>
           )}
         </NavLink>

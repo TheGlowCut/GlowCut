@@ -364,6 +364,19 @@
   font-size: 19px;
 }
 
+.booking-flow-time-option.unavailable {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.04);
+  color: #5c5f66;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.booking-flow-time-option.unavailable:hover {
+  transform: none;
+  border-color: transparent;
+}
+
 .booking-flow-summary-panel {
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 28px;

@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { MdSearch, MdMenu, MdClose, MdChat, MdNotifications, MdPerson } from 'react-icons/md';
+import { MdMenu, MdClose, MdChat, MdNotifications, MdPerson } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../ui/Button';
@@ -11,7 +11,7 @@ import glowcutLogo from '../../../assets/logos/glowcut-logo.jpg';
 const AUTH_NAV = [
   { label: 'Home', to: '/' },
   { label: 'Services', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -19,7 +19,7 @@ const AUTH_NAV = [
 const GUEST_NAV = [
   { label: 'Home', to: '/' },
   { label: 'Services', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant', guestWarning: true },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -84,13 +84,6 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-sm flex-shrink-0 relative z-10">
-        <button
-          aria-label="Search"
-          className="text-on-surface-variant hover:text-primary active:scale-95 transition-all"
-        >
-          <MdSearch className="text-2xl" />
-        </button>
-
         {isAuthenticated ? (
           <button
             onClick={() => navigate('/profile')}
@@ -198,14 +191,6 @@ export function AdminHeader({ title = 'Dashboard', avatarSrc, unreadChat = false
         </h2>
       </div>
       <div className="flex items-center gap-gutter">
-        <div className="relative hidden md:block">
-          <input
-            className="bg-surface-container-lowest border-0 border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-sm py-2 px-4 w-40 lg:w-64 transition-all duration-300 text-on-surface placeholder-on-surface-variant/50"
-            placeholder="Search data..."
-            type="text"
-          />
-          <MdSearch className="absolute right-2 top-2 text-outline text-sm" />
-        </div>
         <div className="flex items-center gap-4">
           <button className="text-on-surface hover:text-primary transition-colors relative">
             <MdChat className="text-xl" />
