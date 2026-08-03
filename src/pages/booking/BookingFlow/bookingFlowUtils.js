@@ -14,13 +14,6 @@ export const FOOTER_LINKS = {
     { label: 'Privacy Policy', to: '/privacy-policy' },
     { label: 'Terms and Conditions', to: '/terms-of-service' },
   ],
-  Features: [
-    { label: 'Online Booking', to: '/services' },
-    { label: 'Sales & Payments', to: '/services' },
-    { label: 'Marketing & Automation', to: '/stylists' },
-    { label: 'Reporting', to: '/profile' },
-    { label: 'Mini-CRM', to: '/support/help' },
-  ],
 };
 
 export const SOCIAL_LINKS = [
@@ -65,12 +58,23 @@ export const formatTimeLabel = (time) => {
   return `${displayHour}:${minute} ${suffix}`;
 };
 
+// Local calendar date (YYYY-MM-DD) for a Date. The backend stores bookingDate
+// as local midnight, so the payload must use the same local calendar day the
+// customer sees — date.toISOString() would shift the day backwards for
+// UTC+ timezones during the early hours and cause "past date" errors.
+const toISODate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const buildUpcomingDays = (count = 7) =>
   Array.from({ length: count }, (_, index) => {
     const date = new Date();
     date.setDate(date.getDate() + index);
     return {
-      iso: date.toISOString().split('T')[0],
+      iso: toISODate(date),
       weekdayShort: date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
       dayNumber: date.toLocaleDateString('en-US', { day: 'numeric' }),
     };
