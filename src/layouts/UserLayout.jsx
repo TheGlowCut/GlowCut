@@ -12,18 +12,24 @@ export default function UserLayout() {
     '/booking/service',
     '/booking/date-time',
     '/booking/confirm',
+<<<<<<< HEAD
     '/booking/summary',
     '/booking/waiting-lounge',
     '/ai/style-consultant',
     '/privacy-policy',
+=======
+>>>>>>> 140809b6ab3636ebecb3f88316daf34a8e32b865
   ].includes(pathname);
   const isMarketingRoute =
     pathname === '/' ||
     pathname === '/services' ||
     pathname === '/stylists' ||
+<<<<<<< HEAD
     pathname === '/privacy-policy' ||
     pathname === '/terms-of-service' ||
     pathname === '/careers' ||
+=======
+>>>>>>> 140809b6ab3636ebecb3f88316daf34a8e32b865
     isSalonDetailRoute ||
     isBookingShowcaseRoute;
 
