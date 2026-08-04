@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
   MdSchedule,
@@ -16,21 +16,81 @@ import {
   MdAttachMoney,
   MdWarning,
   MdPerson,
+  MdArrowForward,
+  MdMenu,
+  MdClose,
+  MdPersonOutline,
+  MdStarRate,
 } from 'react-icons/md';
-import { motion } from 'framer-motion';
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
+import { motion, AnimatePresence } from 'framer-motion';
+import AuthContext from '../../../context/AuthContext';
+import Avatar from '../../../components/ui/Avatar';
 import Card from '../../../components/ui/Card';
 import { useBooking } from '../../../hooks/useBooking';
 import * as bookingService from '../../../services/bookingService';
+import glowcutMark from '../../../assets/brand/glowcut-mark.png';
+import '../../../pages/home/Home/Home.css';
+
+const NAV_LINKS = [
+  { label: 'Home', to: '/' },
+  { label: 'Services', to: '/services' },
+  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'AI Scanner', to: '/ai/style-consultant' },
+  { label: 'Live Queue', to: '/booking/waiting-lounge', active: true },
+];
+
+const FOOTER_LINKS = {
+  Company: [
+    { label: 'About Us', to: '/about' },
+    { label: 'Careers', to: '/careers' },
+    { label: 'Contact Support', to: '/contact' },
+  ],
+  Solutions: [
+    { label: 'AI Hair Stylist', to: '/ai' },
+    { label: 'Live Queues', to: '/booking/waiting-lounge' },
+    { label: 'For Salons', to: '/for-salons' },
+  ],
+  Legal: [
+    { label: 'Privacy Policy', to: '/privacy-policy' },
+    { label: 'Terms of Use', to: '/terms-of-service' },
+  ]
+};
+
+const socialLinks = [
+  { label: 'Facebook', icon: FaFacebookF },
+  { label: 'Instagram', icon: FaInstagram },
+  { label: 'X', icon: FaXTwitter },
+  { label: 'LinkedIn', icon: FaLinkedinIn },
+];
+
+function Brand() {
+  return (
+    <Link to="/" className="home-brand" aria-label="Glow and Cut home">
+      <img src={glowcutMark} alt="" />
+      <span>Glow&Cut</span>
+    </Link>
+  );
+}
+
+function GoldButton({ children, onClick, className = '' }) {
+  return (
+    <button type="button" onClick={onClick} className={`home-gold-button ${className}`}>
+      <span>{children}</span>
+      <MdArrowForward aria-hidden="true" />
+    </button>
+  );
+}
 
 const GAMES = [
   {
     title: 'Barber Trivia',
-    description: 'Test your style IQ and win loyalty points.',
+    description: 'Test your style IQ and win instant loyalty points.',
     icon: MdQuiz,
   },
   {
     title: 'Style Match-3',
-    description: 'Connect tools to clear the board.',
+    description: 'Connect shears & combs to clear the luxury board.',
     icon: MdGridView,
   },
 ];
@@ -38,10 +98,27 @@ const GAMES = [
 const VIDEOS = [
   {
     title: 'Classic Fade Tutorial',
-    views: '12.4K',
-    likes: 892,
+    description: 'Sleek low-fade blend guidelines',
+    views: '12.4K views',
+    rating: '4.9',
     image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBHghyCHZ8Mgjf-31cDlTgDu4Sd2pf7yDtBYS22C-P0eZsofUEoU177c4OdhLTd1KrQCdDywUSS32hTTlTLg7udD8NIaGkMOlvtkL7yMm9Wusl1e9CYmziljMZfRd68mjVHCqcchpUOIEjK-4XU6y7yV0xFc9obALf1uRUFo2syowoSaXlU8ez9BxjHBszG6lIofXkNq5BhclkcpwMY9LNN1gWgm09UHu_Y5Psn86k54j-47Q3Rod5DjHqCv6B8I3klGSK2Y5mC9lA',
+      'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=600&auto=format&fit=crop',
+  },
+  {
+    title: 'Textured Crop Volume',
+    description: 'Modern top crop texturing styling',
+    views: '9.2K views',
+    rating: '4.8',
+    image:
+      'https://images.unsplash.com/photo-1595959223842-888e404b901a?q=80&w=600&auto=format&fit=crop',
+  },
+  {
+    title: 'Sovereign Beard Trim',
+    description: 'Luxe hot towel beard alignment',
+    views: '14.1K views',
+    rating: '4.9',
+    image:
+      'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=600&auto=format&fit=crop',
   },
 ];
 
@@ -50,6 +127,10 @@ export default function WaitingLounge() {
   const location = useLocation();
   const { booking } = useBooking();
   
+  const { userType, profile } = useContext(AuthContext);
+  const profileAvatar = profile?.profileImage || profile?.avatar;
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const bookingId = location.state?.bookingId || booking.createdBookings?.[0]?._id || booking.createdBookings?.[0]?.id;
 
   const [liveBooking, setLiveBooking] = useState(null);
@@ -189,8 +270,8 @@ export default function WaitingLounge() {
     );
   }
 
-  const stylistName = liveBooking?.barberId?.name || 'Your stylist';
-  const stylistImage = liveBooking?.barberId?.profileImage || liveBooking?.barberId?.image || '';
+  const stylistName = liveBooking?.barberId?.name || booking?.stylist?.name || 'Your stylist';
+  const stylistImage = liveBooking?.barberId?.profileImage || liveBooking?.barberId?.image || booking?.stylist?.profileImage || booking?.stylist?.image || '';
   const queuePosition = liveBooking?.queueNumber;
   const progressPercent = liveBooking?.status === 'confirmed' ? 100 : liveBooking?.status === 'pending' ? 30 : 60;
   const salonName = liveBooking?.salonId?.name || 'GlowCut Salon';
@@ -198,169 +279,241 @@ export default function WaitingLounge() {
   const finalAmount = liveBooking?.finalAmount || liveBooking?.price || 0;
 
   return (
-    <motion.main
-      className="relative z-10 pt-8 pb-xl px-margin-mobile md:px-margin-desktop max-w-[1440px] mx-auto font-body-md"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      <section className="mb-xl">
-        <Card variant="elevated" className="p-md md:p-xl flex flex-col md:flex-row items-center gap-xl border-t-2 border-primary/30">
-          <div className="flex-1 w-full">
-            <div className="flex items-center gap-sm mb-base text-primary">
-              <MdSchedule className="text-[20px]" />
-              <span className="font-label-md text-label-md uppercase tracking-widest text-primary shadow-warm-sm">
-                Live Queue Status
-              </span>
-            </div>
-            
-            <h1 className="font-display-lg text-display-lg mb-md text-on-surface">
-              {countdownText ? (
-                <span className={countdownText.includes('ready') || countdownText.includes('Progress') ? 'text-primary' : 'text-primary'}>
-                  {countdownText}
-                </span>
-              ) : (
-                <>Status: <span className="text-primary capitalize">{liveBooking?.status || 'Pending'}</span></>
-              )}
-            </h1>
-            
-            <div className="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden mb-base">
-              <div
-                className="h-full bg-primary rounded-full relative shadow-warm-sm transition-all duration-1000"
-                style={{ width: `${progressPercent}%` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 p-4 rounded-xl bg-surface border border-white/5">
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] text-on-surface-variant uppercase tracking-widest">Salon</span>
-                <span className="font-bold text-on-surface flex items-center gap-1 text-sm"><MdStorefront className="text-primary"/> {salonName}</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] text-on-surface-variant uppercase tracking-widest">Service</span>
-                <span className="font-bold text-on-surface flex items-center gap-1 text-sm"><MdContentCut className="text-primary"/> {serviceName}</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] text-on-surface-variant uppercase tracking-widest">Total</span>
-                <span className="font-bold text-on-surface flex items-center gap-1 text-sm"><MdAttachMoney className="text-primary"/> PKR {finalAmount.toLocaleString()}</span>
-              </div>
-              <div className="flex flex-col gap-1 border-l border-white/10 pl-4">
-                <span className="text-[10px] text-primary uppercase tracking-widest">Token / Queue</span>
-                <span className="font-display-lg text-primary text-2xl leading-none">#{queuePosition || '--'}</span>
-              </div>
-            </div>
+    <main className="glow-home flex flex-col min-h-screen font-sans bg-[#0a0a0a]">
+      <div className="home-shell" style={{ flexShrink: 0, position: 'relative', zIndex: 50 }}>
+        <header className="home-header">
+          <Brand />
+
+          <nav className="home-nav" aria-label="Main navigation">
+            {NAV_LINKS.map((item) => (
+              <Link key={item.label} to={item.to} className={item.active ? 'text-[#E4B56C]' : ''}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="home-header-actions">
+            {userType === 'authenticated' ? (
+              <button type="button" className="home-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
+                <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="home-profile-avatar" />
+              </button>
+            ) : (
+              <button type="button" className="home-header-profile" aria-label="Search">
+                <MdPersonOutline className="text-xl text-white" />
+              </button>
+            )}
           </div>
 
-          <div className="hidden md:block w-px h-40 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+          <button
+            type="button"
+            aria-label="Open menu"
+            className="home-menu-button"
+            onClick={() => setMobileOpen(true)}
+          >
+            <MdMenu />
+          </button>
+        </header>
 
-          <div className="flex items-center gap-md w-full md:w-auto bg-surface p-4 rounded-xl border border-white/5">
-            <div className="relative">
-              {stylistImage ? (
-                <img
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-primary p-1 object-cover bg-surface-container shadow-warm-sm"
-                  alt={stylistName}
-                  src={stylistImage}
-                />
-              ) : (
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-primary p-1 bg-surface-container shadow-warm-sm flex items-center justify-center">
-                  <MdPerson className="text-on-surface-variant text-4xl" />
-                </div>
-              )}
-              <div className="absolute bottom-1 right-1 w-5 h-5 bg-primary rounded-full border-2 border-surface animate-pulse" />
-            </div>
-            <div>
-              <p className="text-on-surface-variant text-caption uppercase tracking-wider mb-xs">
-                Assigned To
-              </p>
-              <p className="font-headline-md text-headline-md leading-tight text-on-surface">{stylistName}</p>
-              <p className="text-primary font-label-md text-label-md mt-xs italic">
-                GlowCut Specialist
-              </p>
-            </div>
-          </div>
-        </Card>
-      </section>
-
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-xl">
-        <div className="lg:col-span-5">
-          <div className="flex items-center justify-between mb-md">
-            <h2 className="font-headline-lg text-headline-lg text-on-surface">Quick Play Games</h2>
-            <MdVideogameAsset className="text-primary text-2xl" />
-          </div>
-          <div className="grid grid-cols-2 gap-md">
-            {GAMES.map((game) => {
-              const Icon = game.icon;
-              return (
-                <Card key={game.title} variant="glass" hoverable className="p-md">
-                  <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                    <Icon className="text-[28px] text-primary" />
-                  </div>
-                  <h3 className="font-headline-md text-headline-md mb-xs text-on-surface">{game.title}</h3>
-                  <p className="text-on-surface-variant text-caption mb-md leading-relaxed">{game.description}</p>
-                  <button
-                    onClick={() => toast('Mini-games coming soon!')}
-                    className="w-full py-2 border border-white/10 rounded-xl font-label-md text-label-md hover:bg-white/10 transition-colors text-on-surface"
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              className="home-mobile-nav-overlay"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <div className="home-mobile-nav-header">
+                <Brand />
+                <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)}>
+                  <MdClose />
+                </button>
+              </div>
+              <nav className="home-mobile-nav-links">
+                {NAV_LINKS.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                    className={item.active ? 'text-[#E4B56C]' : ''}
                   >
-                    Play Now
-                  </button>
-                </Card>
-              );
-            })}
-          </div>
-          <div className="mt-md bg-surface-container border border-white/5 rounded-xl p-md flex items-center justify-between opacity-60 cursor-not-allowed">
-            <div className="flex items-center gap-sm">
-              <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center border border-white/5">
-                <MdLeaderboard className="text-primary" />
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="flex-1 w-full max-w-6xl mx-auto py-12 px-4 md:px-8 relative z-10">
+        <section className="mb-16">
+          <div className="bg-[#111111] p-6 md:p-10 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-8 border border-white/5 shadow-2xl">
+            <div className="flex-1 w-full max-w-lg">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10 text-green-500 text-[10px] font-bold tracking-widest uppercase mb-6">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div> LIVE QUEUE STATUS
+              </div>
+              
+              <h1 className="text-4xl md:text-[44px] text-white font-serif mb-6 tracking-tight">
+                {countdownText ? (
+                  <span className={countdownText.includes('ready') || countdownText.includes('Progress') ? 'text-green-500' : 'text-[#E4B56C]'}>
+                    {countdownText}
+                  </span>
+                ) : (
+                  <>Status: <span className="text-[#34d399] capitalize">{liveBooking?.status || 'Pending'}</span></>
+                )}
+              </h1>
+              
+              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden mb-8">
+                <div
+                  className="h-full bg-[#E4B56C] rounded-full relative transition-all duration-1000"
+                  style={{ width: `${progressPercent}%` }}
+                >
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-4 p-5 rounded-2xl border border-white/5 bg-[#1a1a1a]/40">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[9px] text-[#E4B56C] font-bold uppercase tracking-widest">Salon</span>
+                  <span className="font-bold text-white flex items-start gap-1.5 text-[11px] leading-tight"><MdStorefront className="text-[#E4B56C] text-sm shrink-0"/> <span>{salonName}</span></span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[9px] text-[#E4B56C] font-bold uppercase tracking-widest">Service</span>
+                  <span className="font-bold text-white flex items-start gap-1.5 text-[11px] leading-tight"><MdContentCut className="text-[#E4B56C] text-sm shrink-0"/> <span>{serviceName}</span></span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[9px] text-[#E4B56C] font-bold uppercase tracking-widest">Total</span>
+                  <span className="font-bold text-white flex items-start gap-1.5 text-[11px] leading-tight"><span className="text-[#E4B56C] font-mono text-sm leading-none">$</span> <span>PKR {finalAmount.toLocaleString()}</span></span>
+                </div>
+                <div className="flex flex-col gap-1.5 border-l border-white/10 pl-5">
+                  <span className="text-[9px] text-[#E4B56C] font-bold uppercase tracking-widest">Token / Queue</span>
+                  <span className="font-serif text-[#E4B56C] text-xl leading-none">#{queuePosition || '--'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-5 bg-[#0a0a0a] p-4 pr-12 rounded-[1.5rem] border border-white/5 min-w-[280px]">
+              <div className="relative">
+                {stylistImage ? (
+                  <img
+                    className="w-16 h-16 rounded-full border border-green-500 object-cover"
+                    alt={stylistName}
+                    src={stylistImage}
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full border border-green-500 bg-white/5 flex items-center justify-center">
+                    <MdPersonOutline className="text-white/50 text-2xl" />
+                  </div>
+                )}
               </div>
               <div>
-                <p className="font-label-md text-label-md text-on-surface">Lounge Leaderboard</p>
-                <p className="text-on-surface-variant text-caption">Coming soon</p>
+                <p className="text-[#A1A1AA] text-[10px] uppercase tracking-widest mb-1">
+                  ASSIGNED TO
+                </p>
+                <p className="text-white text-lg font-serif">{stylistName}</p>
+                <p className="text-[#E4B56C] text-[11px] mt-1">
+                  Glow&Cut Specialist
+                </p>
               </div>
             </div>
-            <MdChevronRight className="text-on-surface-variant" />
           </div>
-        </div>
+        </section>
 
-        <div className="lg:col-span-7">
-          <div className="flex items-center justify-between mb-md">
-            <h2 className="font-headline-lg text-headline-lg text-on-surface">Trending Styles</h2>
-            <MdTrendingUp className="text-primary text-2xl" />
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+          <div className="lg:col-span-5">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl text-white font-serif">Quick Play Games</h2>
+              <MdVideogameAsset className="text-[#E4B56C] text-2xl" />
+            </div>
+            <div className="flex flex-col gap-4">
+              {GAMES.map((game) => {
+                const Icon = game.icon;
+                return (
+                  <div key={game.title} className="bg-[#111111] p-5 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-[#E4B56C]/30 transition-colors">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="w-10 h-10 rounded-lg bg-[#E4B56C]/10 flex items-center justify-center">
+                        <Icon className="text-xl text-[#E4B56C]" />
+                      </div>
+                      <div className="flex-1 pr-4">
+                        <h3 className="text-white text-[15px] font-serif mb-1">{game.title}</h3>
+                        <p className="text-[#A1A1AA] text-xs leading-relaxed">{game.description}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => toast('Mini-games coming soon!')}
+                      className="px-5 py-2 rounded-full bg-[#E4B56C] text-black text-xs font-bold whitespace-nowrap hover:bg-[#cfa462] transition-colors"
+                    >
+                      Play Now
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-md">
-            {Array.from({ length: 3 }).map((_, i) => {
-              const video = VIDEOS[i % VIDEOS.length];
-              return (
+
+          <div className="lg:col-span-7">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl text-white font-serif">Trending Styles</h2>
+              <MdTrendingUp className="text-green-500 text-xl" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {VIDEOS.map((video, i) => (
                 <div
                   key={i}
-                  className="relative group aspect-[9/16] rounded-xl overflow-hidden bg-surface-container border border-white/10 cursor-pointer"
+                  className="bg-[#111111] rounded-2xl overflow-hidden border border-white/5 cursor-pointer flex flex-col group hover:border-white/20 transition-colors"
                 >
-                  <img
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    alt={video.title}
-                    src={video.image}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
-                  <div className="absolute bottom-0 p-sm w-full">
-                    <p className="font-label-md text-label-md text-on-surface line-clamp-2">
-                      {video.title}
-                    </p>
-                    <div className="flex items-center gap-base mt-xs text-[10px] text-white/70">
-                      <span className="flex items-center gap-xs">
-                        <MdVisibility className="text-[12px]" /> {video.views}
+                  <div className="aspect-[4/3] w-full overflow-hidden">
+                    <img
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      alt={video.title}
+                      src={video.image}
+                    />
+                  </div>
+                  <div className="p-4 flex flex-col flex-1">
+                    <p className="text-[#E4B56C] text-[10px] mb-1 leading-tight line-clamp-1">{video.description}</p>
+                    <h3 className="text-white text-sm font-serif mb-3 line-clamp-1">{video.title}</h3>
+                    <div className="flex items-center justify-between mt-auto">
+                      <span className="flex items-center gap-1 text-white text-[11px] font-bold">
+                        <MdStarRate className="text-[#E4B56C] text-sm" /> {video.rating}
                       </span>
-                      <span className="flex items-center gap-xs">
-                        <MdFavorite className="text-[12px]" /> {video.likes}
+                      <span className="flex items-center gap-1 text-[#A1A1AA] text-[11px]">
+                        <MdVisibility className="text-[12px]" /> {video.views}
                       </span>
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer className="home-footer" style={{ marginTop: 'auto' }}>
+        <div className="home-shell">
+          <div className="home-footer-grid">
+            <div className="home-footer-cta">
+              <Brand />
+              <p className="text-[#A1A1AA] text-sm leading-relaxed mt-4 max-w-xs">
+                Pakistan's premium grooming and styling platform powered by advanced AI face scanners and elite live queue systems.
+              </p>
+            </div>
+
+            {Object.entries(FOOTER_LINKS).map(([title, links]) => (
+              <div className="home-footer-links" key={title}>
+                <h3>{title}</h3>
+                {links.map((link) => (
+                  <Link key={link.label} to={link.to}>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          <div className="home-footer-bottom mt-16 pt-8 border-t border-white/10 flex flex-col items-center">
+            <div className="text-[#A1A1AA] text-xs">© 2026 Glow&Cut Cyber-Chic Salons. All rights reserved.</div>
           </div>
         </div>
-      </section>
-    </motion.main>
+      </footer>
+    </main>
   );
 }
