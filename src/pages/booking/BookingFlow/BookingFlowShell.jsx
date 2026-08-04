@@ -94,7 +94,7 @@ export default function BookingFlowShell({ currentStep, title, children }) {
         <Brand />
         <nav className="booking-flow-nav" aria-label="Primary navigation">
           {NAV_LINKS.map((link) => (
-            <Link key={link.label} to={link.to} className={link.label === 'Stylists & Offers' ? 'active' : ''}>
+            <Link key={link.label} to={link.to} className={link.label === 'Salon & Barbers' ? 'active' : ''}>
               {link.label}
             </Link>
           ))}

@@ -1,17 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { MdVerifiedUser } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import Button from '../../../components/ui/Button';
-import Loader from '../../../components/ui/Loader';
 import { useAuth } from '../../../hooks/useAuth';
-
-const BENEFITS = [
-  'Secure 2-factor authentication',
-  'Instant account activation',
-  'Access to all premium features',
-];
 
 export default function VerifyOtp() {
   const navigate = useNavigate();
@@ -23,6 +14,7 @@ export default function VerifyOtp() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [submitting, setSubmitting] = useState(false);
   const [resending, setResending] = useState(false);
+  const [countdown, setCountdown] = useState(45);
   const inputRefs = useRef([]);
 
   useEffect(() => {
@@ -31,6 +23,18 @@ export default function VerifyOtp() {
       navigate('/auth/signup');
     }
   }, [email, navigate]);
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [countdown]);
 
   const handleChange = (index, value) => {
     if (isNaN(value)) return;
@@ -82,7 +86,7 @@ export default function VerifyOtp() {
   };
 
   const handleResendCode = async () => {
-    if (resending) return;
+    if (resending || countdown > 0) return;
     setResending(true);
     const toastId = toast.loading('Sending new OTP code...');
 
@@ -90,6 +94,7 @@ export default function VerifyOtp() {
       const res = await resendVerificationOtp({ email });
       toast.success(res.message || 'A fresh OTP has been sent to your email!', { id: toastId });
       setOtp(['', '', '', '', '', '']);
+      setCountdown(45);
       if (inputRefs.current[0]) inputRefs.current[0].focus();
     } catch (error) {
       toast.error(error?.message || 'Failed to resend OTP.', { id: toastId });
@@ -99,64 +104,41 @@ export default function VerifyOtp() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-xl w-full max-w-6xl items-center">
-      {/* Left: Visual + Benefits */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col items-center justify-center space-y-lg"
-      >
-        <div className="relative w-full aspect-square max-w-md flex items-center justify-center">
-          <div className="absolute inset-0 bg-primary/5 rounded-full blur-3xl animate-pulse" />
-          <div className="relative z-10 flex flex-col items-center">
-            <span
-              className="material-symbols-outlined text-[70px] md:text-[120px] text-primary drop-shadow-[0_0_6px_rgba(124,140,61,0.25)]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              shield_person
-            </span>
-            <div className="absolute top-1/2 left-[-10%] w-[120%] h-[2px] bg-primary shadow-warm opacity-60" />
-            <Loader variant="scan" className="mt-md" />
+    <div className="flex flex-col min-h-screen bg-[#0a0a0a] font-sans">
+      <main className="flex-1 flex items-center justify-center py-12 px-4 relative z-10 w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-[600px] p-8 md:p-14 rounded-[2rem] bg-[#111111] border border-white/5 shadow-2xl flex flex-col items-center"
+        >
+          <div className="w-20 h-20 mb-6 rounded-full border border-white/10 bg-[#161616] flex items-center justify-center relative">
+             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+               <path d="M4 7.00005L10.2 11.65C11.2667 12.45 12.7333 12.45 13.8 11.65L20 7" stroke="#E4B56C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+               <rect x="3" y="5" width="18" height="14" rx="2" stroke="#E4B56C" strokeWidth="1.5" strokeLinecap="round"/>
+             </svg>
+             <div className="absolute -bottom-1 -right-1 bg-[#161616] rounded-full p-1">
+               <div className="bg-[#E4B56C] rounded-full w-6 h-6 flex items-center justify-center text-black">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+               </div>
+             </div>
           </div>
-        </div>
-        <div className="text-center w-full">
-          <h2 className="font-headline-lg text-headline-lg text-on-surface mb-xs">
-            Secure Verification
+
+          <h2 className="text-3xl md:text-4xl text-white mb-4 text-center tracking-tight font-medium">
+            Verify your <span className="text-[#E4B56C]">email</span>
           </h2>
-          <p className="font-body-md text-on-surface-variant max-w-sm mx-auto">
-            We have sent a 6-digit verification code to your registered email address.
+          
+          <p className="text-[#A1A1AA] text-center mb-8 max-w-[380px] leading-relaxed text-[15px]">
+            We've sent a verification code to your email address.<br />
+            Please enter the code below to verify your account.
           </p>
-          <div className="mt-md space-y-sm">
-            {BENEFITS.map((b) => (
-              <div key={b} className="flex items-center gap-sm justify-center">
-                <div className="w-2 h-2 rounded-full bg-primary" />
-                <span className="text-on-surface-variant text-sm">{b}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </motion.div>
 
-      {/* Right: OTP Card */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex items-center justify-center"
-      >
-        <div className="w-full max-w-md p-lg rounded-2xl bg-surface-container/80 backdrop-blur-2xl border border-primary/20 shadow-soft">
-          <div className="mb-lg">
-            <h3 className="font-headline-md text-headline-md text-on-surface mb-xs">
-              Verify Your Email
-            </h3>
-            <p className="font-body-md text-on-surface-variant break-all">
-              Enter the OTP code sent to <span className="text-primary font-semibold">{email}</span>
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-lg">
-            <div className="flex justify-between gap-xs" onPaste={handlePaste}>
+          <form onSubmit={handleSubmit} className="w-full max-w-[420px] flex flex-col">
+            <div className="w-full text-left mb-3 text-[14px] text-gray-300 ml-1">
+              Enter 6-digit code
+            </div>
+            
+            <div className="flex justify-between w-full gap-2 md:gap-3 mb-8" onPaste={handlePaste}>
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -166,36 +148,40 @@ export default function VerifyOtp() {
                   ref={(el) => (inputRefs.current[index] = el)}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-12 h-14 bg-surface border border-white/10 rounded-xl text-center text-on-surface text-xl font-bold font-sora focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-12 h-14 md:w-[60px] md:h-[64px] bg-transparent border border-white/10 rounded-xl text-center text-white text-xl focus:outline-none focus:border-[#E4B56C] focus:ring-1 focus:ring-[#E4B56C] transition-all"
                 />
               ))}
             </div>
 
-            <Button type="submit" variant="primary" size="full" loading={submitting} disabled={submitting}>
-              Verify &amp; Activate Account
-            </Button>
-          </form>
-
-          <div className="mt-xl text-center">
-            <p className="text-body-md text-on-surface-variant">
-              Didn't get the code?{' '}
+            <div className="text-[14px] text-[#A1A1AA] mb-12 text-center">
+              Didn't receive the code?{' '}
               <button
                 type="button"
                 onClick={handleResendCode}
-                disabled={resending}
-                className="text-primary font-bold hover:text-primary-fixed transition-colors underline underline-offset-4 disabled:opacity-50"
+                disabled={resending || countdown > 0}
+                className="text-[#E4B56C] hover:text-[#cfa462] transition-colors disabled:opacity-50"
               >
-                {resending ? 'Sending...' : 'Resend Code'}
+                {resending ? 'Sending...' : countdown > 0 ? `Resend code (00:${countdown.toString().padStart(2, '0')})` : 'Resend code'}
               </button>
-            </p>
-            <p className="mt-md">
-              <Link to="/auth/signup" className="text-caption font-caption text-outline hover:text-on-surface transition-colors">
-                ← Back to Registration
+            </div>
+
+            <div className="w-full flex items-center justify-between mt-2">
+              <Link to="/auth/signup" className="text-white hover:text-gray-300 transition-colors flex items-center gap-2 text-[15px]">
+                &larr; Back
               </Link>
-            </p>
-          </div>
-        </div>
-      </motion.div>
+
+              <button 
+                type="submit" 
+                disabled={submitting}
+                className="bg-[#E4B56C] text-black px-6 py-2.5 rounded-full font-medium flex items-center gap-2 hover:bg-[#cfa462] transition-colors disabled:opacity-50 text-[15px]"
+              >
+                {submitting ? 'Verifying...' : 'Verify Email'}
+                &rarr;
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </main>
     </div>
   );
 }

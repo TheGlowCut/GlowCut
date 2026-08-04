@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 export default function AuthLayout() {
   const { pathname } = useLocation();
-  const isPremiumAuthRoute = pathname === '/auth/login' || pathname === '/auth/signup';
+  const isPremiumAuthRoute = pathname === '/auth/login' || pathname === '/auth/signup' || pathname === '/auth/verify-otp';
 
   if (isPremiumAuthRoute) {
     return (

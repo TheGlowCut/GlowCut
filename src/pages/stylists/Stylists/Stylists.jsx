@@ -7,7 +7,6 @@ import {
   MdMenu,
   MdPeople,
   MdRefresh,
-  MdSearch,
   MdStar,
 } from 'react-icons/md';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
@@ -22,8 +21,8 @@ import './Stylists.css';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'Salon & Service', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salons & Service', to: '/services' },
+  { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -264,6 +263,22 @@ export default function Stylists() {
     navigate(salonId ? `/salons/${salonId}` : '/salons/nearby');
   };
 
+  // "Get Started" CTA is auth-aware: logged-in users go to their dashboard
+  // (owner/admin) or the services page (customer) instead of being sent back
+  // to the signup page. Guests / not-logged-in users go to signup as before.
+  const handleGetStarted = () => {
+    if (userType === 'authenticated') {
+      const role = profile?.role;
+      if (role === 'admin' || role === 'owner' || role === 'superadmin') {
+        navigate(profile?.hasSalon ? '/admin/shop' : '/setup-salon');
+      } else {
+        navigate('/services');
+      }
+      return;
+    }
+    navigate('/auth/signup');
+  };
+
   return (
     <main className="stylists-page">
       <div className="stylists-shell">
@@ -285,13 +300,10 @@ export default function Stylists() {
           <div className="stylists-header-actions">
             <GoldButton
               className="stylists-header-cta"
-              onClick={() => navigate('/salons/nearby')}
+              onClick={() => navigate('/services')}
             >
               Book Now
             </GoldButton>
-            <button type="button" className="stylists-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
-              <MdSearch />
-            </button>
             {userType === 'authenticated' && (                <button type="button" className="stylists-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
                 <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="stylists-profile-avatar" />
               </button>
@@ -344,7 +356,7 @@ export default function Stylists() {
                 <GoldButton
                   onClick={() => {
                     setMobileOpen(false);
-                    navigate('/salons/nearby');
+                    navigate('/services');
                   }}
                 >
                   Book Now
@@ -488,7 +500,7 @@ export default function Stylists() {
           <div className="stylists-footer-grid">
             <div className="stylists-footer-cta">
               <h2>Are you ready to get started?</h2>
-              <GoldButton onClick={() => navigate('/auth/signup')}>Get Started for free</GoldButton>
+              <GoldButton onClick={handleGetStarted}>Get Started for free</GoldButton>
             </div>
 
             {Object.entries(FOOTER_LINKS).map(([title, links]) => (

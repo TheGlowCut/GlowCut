@@ -176,18 +176,20 @@ export async function getAvailableTimeSlots(salonId, barberId, dateStr) {
     // if we can't confirm existing bookings, show every shift slot as open
   }
 
+  // Every slot in the shift is offered unless it is already taken by an
+  // existing booking. We intentionally do NOT grey out today's already-passed
+  // times here — that made an entire day look unavailable when a salon was
+  // viewed in the evening (after its closing time), which looked like booking
+  // was broken. Availability = shift hours minus taken bookings only.
   const slots = [];
   const startMin = toMinutes(shiftStart);
   const endMin = toMinutes(shiftEnd);
-  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-  const isToday = !dateStr || dateStr === 'today';
 
   for (let t = startMin; t < endMin; t += SLOT_MINUTES) {
     const time = toHHMM(t);
-    const isPast = isToday && t < nowMin;
     slots.push({
       time,
-      status: takenTimes.has(time) || isPast ? 'unavailable' : 'available',
+      status: takenTimes.has(time) ? 'unavailable' : 'available',
     });
   }
 

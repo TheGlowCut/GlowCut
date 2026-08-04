@@ -15,6 +15,7 @@ export default function SalonCard({ salon }) {
     : salon.location || 'Location unavailable';
   const rating = salon.averageRating ?? salon.rating ?? 0;
   const priceTier = salon.priceTier || '$$';
+  const isOpen = salon.isActive !== false;
 
   return (
     <motion.div
@@ -33,6 +34,16 @@ export default function SalonCard({ salon }) {
             <MdStar className="text-primary text-sm" />
             <span className="text-on-surface font-label-md text-label-md">{rating.toFixed ? rating.toFixed(1) : rating}</span>
           </div>
+          <div
+            className={`absolute top-4 left-4 backdrop-blur-md px-sm py-xs rounded-full flex items-center gap-xs border text-xs font-bold ${
+              isOpen
+                ? 'bg-primary/20 text-primary border-primary/30'
+                : 'bg-error/15 text-error border-error/30'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${isOpen ? 'bg-primary animate-pulse' : 'bg-error'}`} />
+            {isOpen ? 'Open' : 'Closed'}
+          </div>
         </div>
         <div className="p-md">
           <h4 className="font-headline-md text-headline-md mb-xs text-on-surface">{name}</h4>
@@ -41,8 +52,8 @@ export default function SalonCard({ salon }) {
           </p>
           <div className="flex justify-between items-center">
             <span className="text-primary font-bold text-lg">{priceTier}</span>
-            <Button variant="outline" size="sm" onClick={() => navigate(`/salons/${id}`)}>
-              Book Now
+            <Button variant="outline" size="sm" disabled={!isOpen} onClick={() => navigate(`/salons/${id}`)}>
+              {isOpen ? 'Book Now' : 'Closed'}
             </Button>
           </div>
         </div>

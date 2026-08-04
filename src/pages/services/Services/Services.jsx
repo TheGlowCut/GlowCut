@@ -8,7 +8,6 @@ import {
   MdLocationOn,
   MdMenu,
   MdRefresh,
-  MdSearch,
   MdStar,
   MdAccessTime,
   MdStore,
@@ -31,8 +30,8 @@ import './Services.css';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'Salon & Service', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salons & Service', to: '/services' },
+  { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -83,6 +82,7 @@ const getSalonLocation = (salon) => {
 };
 
 const isSalonOpen = (salon) => {
+  if (typeof salon?.isActive === 'boolean') return salon.isActive;
   if (typeof salon?.isOpen === 'boolean') return salon.isOpen;
   if (typeof salon?.openNow === 'boolean') return salon.openNow;
   const status = String(salon?.status || salon?.availability || '').toLowerCase();
@@ -112,9 +112,9 @@ function Brand() {
   );
 }
 
-function GoldButton({ children, onClick, className = '' }) {
+function GoldButton({ children, onClick, className = '', disabled = false }) {
   return (
-    <button type="button" onClick={onClick} className={`services-gold-button ${className}`}>
+    <button type="button" onClick={onClick} disabled={disabled} className={`services-gold-button ${className}`}>
       <span>{children}</span>
       <MdArrowForward />
     </button>
@@ -252,6 +252,22 @@ export default function Services() {
     return rem ? `${hrs}h ${rem}m` : `${hrs}h`;
   };
 
+  // "Get Started" CTA is auth-aware: logged-in users go to their dashboard
+  // (owner/admin) or the services page (customer) instead of being sent back
+  // to the signup page. Guests / not-logged-in users go to signup as before.
+  const handleGetStarted = () => {
+    if (userType === 'authenticated') {
+      const role = profile?.role;
+      if (role === 'admin' || role === 'owner' || role === 'superadmin') {
+        navigate(profile?.hasSalon ? '/admin/shop' : '/setup-salon');
+      } else {
+        navigate('/services');
+      }
+      return;
+    }
+    navigate('/auth/signup');
+  };
+
   // ── Render ──
 
   return (
@@ -272,12 +288,9 @@ export default function Services() {
             ))}
           </nav>
           <div className="services-header-actions">
-            <GoldButton className="services-header-cta" onClick={() => navigate('/salons/nearby')}>
+            <GoldButton className="services-header-cta" onClick={() => navigate('/services')}>
               Book Now
             </GoldButton>
-            <button type="button" className="services-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
-              <MdSearch />
-            </button>
             {userType === 'authenticated' && (
               <button type="button" className="services-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
                 <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="services-profile-avatar" />
@@ -327,7 +340,7 @@ export default function Services() {
                 <GoldButton
                   onClick={() => {
                     setMobileOpen(false);
-                    navigate('/salons/nearby');
+                    navigate('/services');
                   }}
                 >
                   Book Now
@@ -344,7 +357,7 @@ export default function Services() {
             Discover
           </div>
           <h1>
-            Explore <span>Salon & Services</span>
+            Explore <span>Salons & Services</span>
           </h1>
           <p>
             Browse our curated partner salons and explore services tailored just for you.
@@ -458,11 +471,12 @@ export default function Services() {
                               </small>
                             </div>
                             <GoldButton
+                              disabled={!open}
                               onClick={() =>
                                 navigate(salonId ? `/salons/${salonId}` : '/salons/nearby')
                               }
                             >
-                              View Salon
+                              {open ? 'View Salon' : 'Closed'}
                             </GoldButton>
                           </div>
                         </div>
@@ -602,7 +616,7 @@ export default function Services() {
           <div className="services-footer-grid">
             <div className="services-footer-cta">
               <h2>Are you ready to get started?</h2>
-              <GoldButton onClick={() => navigate('/auth/signup')}>Get Started for free</GoldButton>
+              <GoldButton onClick={handleGetStarted}>Get Started for free</GoldButton>
             </div>
             {Object.entries(FOOTER_LINKS).map(([title, links]) => (
               <div className="services-footer-links" key={title}>

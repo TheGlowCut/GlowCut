@@ -257,6 +257,7 @@ export default function NearbySalons() {
                 : salon.area || 'Location unavailable';
               const rating = salon.averageRating ?? salon.rating ?? 0;
               const image = salon.coverImage || salon.logo || salon.image || 'https://via.placeholder.com/600x400?text=GlowCut';
+              const isOpen = salon.isActive !== false;
               return (
               <motion.div
                 key={id}
@@ -271,11 +272,18 @@ export default function NearbySalons() {
                     src={image}
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-surface/20" />
-                  {salon.isActive && (
-                    <div className="absolute top-4 left-4 bg-primary/20 backdrop-blur-md text-on-surface px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-primary/30">
-                      <span className="w-2 h-2 bg-primary rounded-full animate-pulse" /> Open Now
-                    </div>
-                  )}
+                  <div
+                    className={`absolute top-4 left-4 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border ${
+                      isOpen
+                        ? 'bg-primary/20 text-on-surface border-primary/30'
+                        : 'bg-error/15 text-error border-error/30'
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${isOpen ? 'bg-primary animate-pulse' : 'bg-error'}`}
+                    />
+                    {isOpen ? 'Open Now' : 'Closed'}
+                  </div>
                 </div>
 
                 <div className="md:w-2/3 p-lg flex flex-col justify-between">
@@ -348,9 +356,10 @@ export default function NearbySalons() {
                     </div>
                     <button
                       onClick={() => navigate(`/salons/${id}`)}
-                      className="bg-primary text-on-primary font-headline-md text-label-md px-xl py-4 rounded-xl font-extrabold active:scale-95 transition-all shadow-warm uppercase tracking-tight"
+                      disabled={!isOpen}
+                      className="bg-primary text-on-primary font-headline-md text-label-md px-xl py-4 rounded-xl font-extrabold active:scale-95 transition-all shadow-warm uppercase tracking-tight disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
                     >
-                      Book Slot
+                      {isOpen ? 'Book Slot' : 'Closed'}
                     </button>
                   </div>
                 </div>

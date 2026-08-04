@@ -2,9 +2,7 @@ import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  MdArrowBackIosNew,
   MdArrowForward,
-  MdArrowForwardIos,
   MdAutoAwesome,
   MdCalendarMonth,
   MdClose,
@@ -33,8 +31,8 @@ import './Home.css';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'Salon & Service', to: '/services' },
-  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'Salons & Service', to: '/services' },
+  { label: 'Salon & Barbers', to: '/stylists' },
   { label: 'AI Scanner', to: '/ai/style-consultant' },
   { label: 'Live Queue', to: '/booking/waiting-lounge' },
 ];
@@ -86,9 +84,9 @@ function Brand() {
   );
 }
 
-function GoldButton({ children, onClick, className = '' }) {
+function GoldButton({ children, onClick, className = '', disabled = false }) {
   return (
-    <button type="button" onClick={onClick} className={`home-gold-button ${className}`}>
+    <button type="button" onClick={onClick} disabled={disabled} className={`home-gold-button ${className}`}>
       <span>{children}</span>
       <MdArrowForward aria-hidden="true" />
     </button>
@@ -147,6 +145,22 @@ export default function Home() {
     navigate(query ? `/salons/nearby?area=${encodeURIComponent(query)}` : '/salons/nearby');
   };
 
+  // "Get Started" CTA is auth-aware: logged-in users go to their dashboard
+  // (owner/admin) or the services page (customer) instead of being sent back
+  // to the signup page. Guests / not-logged-in users go to signup as before.
+  const handleGetStarted = () => {
+    if (userType === 'authenticated') {
+      const role = profile?.role;
+      if (role === 'admin' || role === 'owner' || role === 'superadmin') {
+        navigate(profile?.hasSalon ? '/admin/shop' : '/setup-salon');
+      } else {
+        navigate('/services');
+      }
+      return;
+    }
+    navigate('/auth/signup');
+  };
+
   return (
     <main className="glow-home">
       <section className="home-hero" style={{ '--hero-image': `url(${landingHero})` }}>
@@ -163,12 +177,9 @@ export default function Home() {
             </nav>
 
             <div className="home-header-actions">
-              <GoldButton onClick={() => navigate('/salons/nearby')} className="home-header-cta">
+              <GoldButton onClick={() => navigate('/services')} className="home-header-cta">
                 Book Now
               </GoldButton>
-              <button type="button" className="home-header-search" aria-label="Search salons" onClick={() => navigate('/services')}>
-                <MdSearch />
-              </button>
               {userType === 'authenticated' && (
                 <button type="button" className="home-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
                   <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="home-profile-avatar" />
@@ -218,11 +229,20 @@ export default function Home() {
                   <GoldButton
                     onClick={() => {
                       setMobileOpen(false);
-                      navigate('/salons/nearby');
+                      navigate('/services');
                     }}
                   >
                     Book Now
                   </GoldButton>
+                  <a
+                    href="/app-release.apk"
+                    download="app-release.apk"
+                    className="home-download-app-mobile"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <MdDownload />
+                    <span>Download Our App</span>
+                  </a>
                 </motion.aside>
               </>
             )}
@@ -286,14 +306,6 @@ export default function Home() {
             </a>
           </div>
 
-          <div className="home-slider-controls" aria-hidden="true">
-            <button type="button">
-              <MdArrowBackIosNew />
-            </button>
-            <button type="button">
-              <MdArrowForwardIos />
-            </button>
-          </div>
         </div>
       </section>
 {/* 
@@ -436,10 +448,15 @@ export default function Home() {
                     <span>Spa</span>
                   </div>
                   <div className="home-salon-actions">
-                    <small>
-                      <i /> {salon.status || 'Open'}
+                    <small className={salon.isActive === false ? 'closed' : ''}>
+                      <i /> {salon.isActive === false ? 'Closed' : 'Open'}
                     </small>
-                    <GoldButton onClick={() => navigate(`/salons/${salon._id || salon.id}`)}>Book Now</GoldButton>
+                    <GoldButton
+                      disabled={salon.isActive === false}
+                      onClick={() => navigate(`/salons/${salon._id || salon.id}`)}
+                    >
+                      {salon.isActive === false ? 'Closed' : 'Book Now'}
+                    </GoldButton>
                   </div>
                 </div>
               </article>
