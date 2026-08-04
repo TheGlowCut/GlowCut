@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { toPng } from 'html-to-image';
 import {
@@ -13,17 +13,79 @@ import {
   MdWarning,
   MdSchedule,
   MdDownload,
+  MdArrowForward,
+  MdMenu,
+  MdClose,
+  MdPersonOutline,
+  MdReceiptLong
 } from 'react-icons/md';
-import { motion } from 'framer-motion';
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useBooking } from '../../../hooks/useBooking';
+import AuthContext from '../../../context/AuthContext';
+import Avatar from '../../../components/ui/Avatar';
 import * as bookingService from '../../../services/bookingService';
 import glowcutLogo from '../../../assets/logos/glowcut-logo.jpg';
+import glowcutMark from '../../../assets/brand/glowcut-mark.png';
+import '../../../pages/home/Home/Home.css';
+
+const NAV_LINKS = [
+  { label: 'Home', to: '/' },
+  { label: 'Salon & Service', to: '/services' },
+  { label: 'Stylists & Offers', to: '/stylists' },
+  { label: 'AI Scanner', to: '/ai/style-consultant' },
+];
+
+const FOOTER_LINKS = {
+  Company: [
+    { label: 'About Us', to: '/about' },
+    { label: 'Careers', to: '/careers' },
+    { label: 'Privacy Policy', to: '/privacy-policy' },
+    { label: 'Terms and Conditions', to: '/terms-of-service' },
+  ],
+  Features: [
+    { label: 'Online Booking', to: '/services' },
+    { label: 'Sales & Payments', to: '/payments' },
+    { label: 'Marketing & Automation', to: '/marketing' },
+    { label: 'Reporting', to: '/reporting' },
+    { label: 'Mini-CRM', to: '/crm' },
+  ]
+};
+
+const socialLinks = [
+  { label: 'Facebook', icon: FaFacebookF },
+  { label: 'Instagram', icon: FaInstagram },
+  { label: 'X', icon: FaXTwitter },
+  { label: 'LinkedIn', icon: FaLinkedinIn },
+];
+
+function Brand() {
+  return (
+    <Link to="/" className="home-brand" aria-label="Glow and Cut home">
+      <img src={glowcutMark} alt="" />
+      <span>Glow&Cut</span>
+    </Link>
+  );
+}
+
+function GoldButton({ children, onClick, className = '' }) {
+  return (
+    <button type="button" onClick={onClick} className={`home-gold-button ${className}`}>
+      <span>{children}</span>
+      <MdArrowForward aria-hidden="true" />
+    </button>
+  );
+}
 
 export default function BookingSummary() {
   const navigate = useNavigate();
   const location = useLocation();
   const { booking } = useBooking();
   const receiptRef = useRef(null);
+
+  const { userType, profile } = useContext(AuthContext);
+  const profileAvatar = profile?.profileImage || profile?.avatar;
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const bookingId = location.state?.bookingId || booking.createdBookings?.[0]?._id || booking.createdBookings?.[0]?.id;
 
@@ -214,155 +276,244 @@ export default function BookingSummary() {
   };
 
   return (
-    <motion.main
-      className="pt-20"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      <section className="relative h-[180px] md:h-[350px] w-full overflow-hidden">
-        <img
-          alt={salonName}
-          className="w-full h-full object-cover opacity-60"
-          src={liveBooking.salonId?.coverImage || liveBooking.salonId?.logo || "https://lh3.googleusercontent.com/aida-public/AB6AXuDs1l4S_8EO95Tp66DW511NJr98V2sN0njzQGzU4Eqf4cK8PLv3q-3qNfbEsReVRgksKeW7Yqt2sQEMwW4Y7Yl3BPHDiQd16YTFiJ_wlQdRA7-ExY8i04gt9XruVl6ZWtaakuBBUeIqiPNBymY8gp0iQBRUoLeZghPvFMUvO9zXRCp4ruJE0L-0naZRcXFiMEaTSveeAQ_0KA15k4Jsdz_JC4qMpbfJ3GR8aHAetQ7HkXVTtPzjiTNUrAnD7hjKj-Qc_kzkEuzRUH0"}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="absolute bottom-10 left-margin-mobile md:left-margin-desktop flex items-center gap-sm bg-primary/20 backdrop-blur-md px-md py-sm rounded-full border border-primary/30 shadow-warm-sm">
-          <MdPerson className="text-on-surface" />
-          <span className="font-label-md text-label-md text-on-surface tracking-wider uppercase">
-            {liveBooking.status === 'confirmed' ? 'Booking Confirmed' : liveBooking.status}
-          </span>
-        </div>
-      </section>
+    <main className="glow-home flex flex-col min-h-screen font-sans bg-[#0a0a0a]">
+      <div className="home-shell" style={{ flexShrink: 0, position: 'relative', zIndex: 50 }}>
+        <header className="home-header">
+          <Brand />
 
-      <div className="px-margin-mobile md:px-margin-desktop -mt-10 relative z-10 max-w-4xl mx-auto pb-xl">
+          <nav className="home-nav" aria-label="Main navigation">
+            {NAV_LINKS.map((item) => (
+              <Link key={item.label} to={item.to}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="home-header-actions">
+            <GoldButton onClick={() => navigate('/services')} className="home-header-cta">
+              Book Now
+            </GoldButton>
+            {userType === 'authenticated' && (
+              <button type="button" className="home-header-profile" aria-label="Profile" onClick={() => navigate('/profile')}>
+                <Avatar src={profileAvatar} alt={profile?.name || 'Profile'} size="md" className="home-profile-avatar" />
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            aria-label="Open menu"
+            className="home-menu-button"
+            onClick={() => setMobileOpen(true)}
+          >
+            <MdMenu />
+          </button>
+        </header>
+
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              className="home-mobile-nav-overlay"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <div className="home-mobile-nav-header">
+                <Brand />
+                <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)}>
+                  <MdClose />
+                </button>
+              </div>
+              <nav className="home-mobile-nav-links">
+                {NAV_LINKS.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="home-mobile-nav-actions">
+                <GoldButton onClick={() => { setMobileOpen(false); navigate('/services'); }}>
+                  Book Now
+                </GoldButton>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="flex-1 w-full max-w-4xl mx-auto py-12 px-4 md:px-8 relative z-10 flex flex-col items-center">
+        <div className="w-full flex justify-start mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#E4B56C]/30 bg-[#E4B56C]/10 text-[#E4B56C] text-xs font-bold tracking-widest uppercase">
+            <span className="w-1.5 h-1.5 bg-[#E4B56C] rotate-45"></span> {liveBooking.status}
+          </div>
+        </div>
+
         <motion.div
           ref={receiptRef}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-surface-container/80 backdrop-blur-2xl p-lg md:p-xl rounded-2xl flex flex-col gap-lg shadow-soft border border-primary/20 border-t-4 border-primary"
+          className="w-full max-w-3xl bg-transparent p-6 md:p-10 rounded-[2rem] shadow-2xl border border-[#E4B56C]/30"
         >
-          <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/10 pb-6">
-            <div className="flex items-center gap-3">
-              <img src={glowcutLogo} alt="GlowCut" className="w-10 h-10" />
+          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-8 mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/5 border border-[#E4B56C]/20 flex items-center justify-center">
+                <MdReceiptLong className="text-[#E4B56C] text-2xl" />
+              </div>
               <div>
-                <h2 className="font-headline-lg text-headline-lg text-on-surface mb-xs">
+                <h2 className="text-2xl text-white font-medium mb-1 tracking-tight">
                   Digital Receipt
                 </h2>
-                <p className="text-on-surface-variant font-caption text-caption uppercase tracking-widest flex items-center gap-2">
-                  Order ID: <span className="text-primary font-bold">{liveBooking._id}</span>
+                <p className="text-[#A1A1AA] text-[11px] uppercase tracking-wider">
+                  ORDER ID: <span className="text-[#E4B56C] font-mono">{liveBooking._id}</span>
                 </p>
               </div>
             </div>
             <div className="text-left md:text-right">
-              <p className="text-on-surface font-headline-md">{bookingDate}</p>
-              <p className="text-primary font-bold text-lg">{timeSlot}</p>
+              <p className="text-[#A1A1AA] text-sm mb-1">{bookingDate}</p>
+              <p className="text-[#E4B56C] font-mono text-xl">{timeSlot}</p>
             </div>
           </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-xl py-4">
-            <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="space-y-8">
               <div className="flex flex-col gap-2">
-                <span className="text-caption font-caption text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
-                  <MdStorefront className="text-primary" /> Salon
+                <span className="text-[#E4B56C] text-[11px] uppercase tracking-widest flex items-center gap-2 mb-1">
+                  <MdStorefront /> SALON
                 </span>
-                <p className="font-headline-md text-on-surface text-lg">{salonName}</p>
-                <p className="text-on-surface-variant text-sm">{salonAddress}</p>
+                <p className="text-white text-lg font-medium">{salonName}</p>
+                <p className="text-[#A1A1AA] text-sm">{salonAddress}</p>
               </div>
               
               <div className="flex flex-col gap-2">
-                <span className="text-caption font-caption text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
-                  <MdAccountCircle className="text-primary" /> Stylist
+                <span className="text-[#E4B56C] text-[11px] uppercase tracking-widest flex items-center gap-2 mb-1">
+                  <MdAccountCircle /> STYLIST
                 </span>
-                <div className="flex items-center gap-3 bg-surface-container p-3 rounded-xl border border-white/5">
+                <div className="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5">
                   {stylistImage ? (
-                    <img src={stylistImage} alt={stylistName} className="w-10 h-10 rounded-full object-cover border border-white/10" />
+                    <img src={stylistImage} alt={stylistName} className="w-12 h-12 rounded-full object-cover" />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center">
-                      <MdPerson className="text-on-surface-variant text-xl" />
+                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+                      <MdPersonOutline className="text-white/50 text-xl" />
                     </div>
                   )}
                   <div>
-                    <p className="font-bold text-on-surface">{stylistName}</p>
-                    <p className="text-[10px] text-primary uppercase tracking-wider">GlowCut Specialist</p>
+                    <p className="text-white font-medium text-[15px]">{stylistName}</p>
+                    <p className="text-[#E4B56C] text-[10px] uppercase tracking-wider mt-0.5">GLOWCUT SPECIALIST</p>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
-                <span className="text-caption font-caption text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
-                  <MdPerson className="text-primary" /> Customer
+                <span className="text-[#E4B56C] text-[11px] uppercase tracking-widest flex items-center gap-2 mb-1">
+                  <MdPersonOutline /> CUSTOMER
                 </span>
-                <p className="font-headline-md text-on-surface text-lg">{clientName}</p>
-                <p className="text-on-surface-variant text-sm">{liveBooking.customerId?.email || 'N/A'}</p>
+                <p className="text-white text-lg font-medium">{clientName}</p>
+                <p className="text-[#A1A1AA] text-sm">{liveBooking.customerId?.email || 'N/A'}</p>
               </div>
             </div>
 
-            <div className="bg-surface rounded-xl p-6 border border-white/5 flex flex-col h-full">
-              <h3 className="font-headline-md text-on-surface mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
-                <MdContentCut className="text-primary" /> Service Ledger
+            <div className="bg-white/5 rounded-[2rem] p-6 border border-white/5 flex flex-col">
+              <h3 className="text-white text-[15px] font-medium mb-6 flex items-center gap-2">
+                <MdContentCut className="text-[#E4B56C]" /> Service Ledger
               </h3>
               
               <div className="flex-1 space-y-4">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-on-surface font-bold">{serviceName}</p>
-                    <p className="text-on-surface-variant text-sm">{liveBooking.duration} mins</p>
+                    <p className="text-white text-sm">{serviceName}</p>
+                    <p className="text-[#A1A1AA] text-xs mt-1">{liveBooking.duration} mins</p>
                   </div>
-                  <p className="text-on-surface font-mono">PKR {basePrice.toLocaleString()}</p>
+                  <p className="text-white text-sm font-mono tracking-wide">PKR {basePrice.toLocaleString()}</p>
                 </div>
                 
                 {discount > 0 && (
-                  <div className="flex justify-between items-center text-primary">
-                    <p className="font-bold flex items-center gap-1"><MdInfoOutline /> Discount Applied</p>
-                    <p className="font-mono">- PKR {discount.toLocaleString()}</p>
+                  <div className="flex justify-between items-center">
+                    <p className="text-white text-sm">Discount</p>
+                    <p className="text-[#E4B56C] text-sm font-mono tracking-wide">- PKR {discount.toLocaleString()}</p>
                   </div>
                 )}
               </div>
               
-              <div className="mt-8 pt-4 border-t border-white/10 space-y-2">
-                <div className="flex justify-between items-center text-on-surface-variant">
-                  <p>Payment Method</p>
-                  <p className="uppercase text-on-surface font-bold">{liveBooking.paymentMethod}</p>
+              <div className="mt-8 pt-6 border-t border-white/5 space-y-4">
+                <div className="flex justify-between items-center">
+                  <p className="text-[#A1A1AA] text-sm">Payment Method</p>
+                  <p className="uppercase text-white text-sm tracking-wider">{liveBooking.paymentMethod}</p>
                 </div>
-                <div className="flex justify-between items-center text-on-surface-variant">
-                  <p>Payment Status</p>
-                  <p className={`uppercase font-bold ${liveBooking.paymentStatus === 'paid' ? 'text-primary' : 'text-error'}`}>
+                <div className="flex justify-between items-center">
+                  <p className="text-[#A1A1AA] text-sm">Payment Status</p>
+                  <p className={`uppercase text-sm tracking-wider font-medium ${liveBooking.paymentStatus === 'paid' ? 'text-green-500' : 'text-[#E4B56C]'}`}>
                     {liveBooking.paymentStatus}
                   </p>
                 </div>
                 
-                <div className="flex justify-between items-end pt-4 mt-2 border-t border-white/10">
-                  <p className="text-on-surface font-headline-md">Total Amount</p>
-                  <p className="text-primary font-display-lg text-3xl font-bold flex items-center gap-1">
-                    <MdAttachMoney className="text-xl" />
-                    {finalAmount.toLocaleString()}
+                <div className="flex justify-between items-end pt-6 mt-4 border-t border-white/5">
+                  <p className="text-white font-medium">Total Amount</p>
+                  <p className="text-[#E4B56C] text-2xl font-mono tracking-wide">
+                    $ {finalAmount.toLocaleString()}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col gap-4">
+          <div className="mt-10 flex flex-col gap-4">
             <button
               onClick={() => navigate('/booking/waiting-lounge', { state: { bookingId: liveBooking._id } })}
-              className="w-full py-4 rounded-xl bg-primary text-on-primary font-headline-md text-headline-md font-bold transition-all hover:scale-[1.02] active:scale-95 shadow-warm"
+              className="w-full py-4 rounded-[1rem] bg-[#E4B56C] text-black text-sm font-medium transition-all hover:bg-[#cfa462] flex items-center justify-center gap-2"
             >
-              PROCEED TO WAITING LOUNGE
+              PROCEED TO WAITING LOUNGE <MdArrowForward className="text-lg" />
             </button>
             <button
               onClick={handleDownloadImage}
-              className="w-full py-4 rounded-xl border border-primary/40 text-primary font-headline-md text-headline-md font-bold transition-all hover:bg-primary/10 active:scale-95 flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-[1rem] border border-[#E4B56C]/50 text-[#E4B56C] text-sm font-medium transition-all hover:bg-[#E4B56C]/10 flex items-center justify-center gap-2"
             >
-              <MdDownload /> Download Receipt as Image
+              <MdDownload className="text-lg" /> Download Receipt as Image
             </button>
-            <p className="text-center text-on-surface-variant text-xs uppercase tracking-widest flex items-center justify-center gap-1">
-              <MdInfoOutline /> Proceed to the lounge to track your live queue status
+            <p className="text-center text-[#A1A1AA] text-[10px] uppercase tracking-widest mt-2 flex items-center justify-center gap-1.5">
+              <MdInfoOutline className="text-sm" /> PROCEED TO THE LOUNGE TO TRACK YOUR LIVE QUEUE STATUS
             </p>
           </div>
         </motion.div>
       </div>
-    </motion.main>
+
+      <footer className="home-footer" style={{ marginTop: 'auto' }}>
+        <div className="home-shell">
+          <div className="home-footer-grid">
+            <div className="home-footer-cta">
+              <h2>Are you ready to<br/>get started?</h2>
+              <GoldButton onClick={() => navigate('/auth/signup')}>Get Started for free</GoldButton>
+            </div>
+
+            {Object.entries(FOOTER_LINKS).map(([title, links]) => (
+              <div className="home-footer-links" key={title}>
+                <h3>{title}</h3>
+                {links.map((link) => (
+                  <Link key={link.label} to={link.to}>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          <div className="home-footer-bottom">
+            <Brand />
+            <div className="home-socials">
+              {socialLinks.map(({ label, icon: Icon }) => (
+                <a key={label} href="#" aria-label={label}>
+                  <Icon />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="home-copyright">©2026 Glow&Cut<br/><br/>©2026 Glow&Cut</div>
+      </footer>
+    </main>
   );
 }
