@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../ui/Button';
 import Avatar from '../../ui/Avatar';
 import AuthContext from '../../../context/AuthContext';
-import glowcutLogo from '../../../assets/logos/glowcut-logo.jpg';
+import glowcutLogo from '../../../assets/logos/glowcut-mark-XZgku7lW.png';
 
 const AUTH_NAV = [
   { label: 'Home', to: '/' },
@@ -50,12 +50,12 @@ export default function Header() {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 bg-[#FFF4EE] shadow-sm border-b border-primary/10">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent pointer-events-none" />
+    <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 bg-[#0a0a0a] shadow-sm border-b border-[#E4B56C]/10">
+      <div className="absolute inset-0 bg-gradient-to-r from-[#E4B56C]/5 via-transparent to-transparent pointer-events-none" />
 
       <Link to="/" className="flex items-center gap-base flex-shrink-0 relative z-10">
         <img src={glowcutLogo} alt="GlowCut" className="w-10 h-10 rounded-full" />
-        <span className="font-headline-lg text-headline-lg font-bold text-primary tracking-tight">
+        <span className="text-3xl font-serif font-bold text-[#E4B56C] tracking-tight">
           GlowCut
         </span>
       </Link>
@@ -66,12 +66,12 @@ export default function Header() {
             key={link.label}
             to={link.to}
             className={({ isActive }) =>
-              `font-label-md text-label-md px-3 py-2 rounded-lg transition-all duration-200 ${
+              `text-sm font-sans font-bold px-3 py-2 rounded-lg transition-all duration-200 ${
                 isActive
-                  ? 'text-primary bg-primary/10'
+                  ? 'text-[#E4B56C] bg-[#E4B56C]/10'
                   : link.label === 'Manage Salon'
-                  ? 'text-primary font-bold bg-primary/5 border border-primary/20'
-                  : 'text-on-surface-variant hover:text-primary hover:bg-white/5'
+                  ? 'text-[#E4B56C] font-bold bg-[#E4B56C]/5 border border-[#E4B56C]/20'
+                  : 'text-[#A1A1AA] hover:text-[#E4B56C] hover:bg-white/5'
               } ${link.guestWarning && isGuest ? 'opacity-60' : ''}`
             }
           >
@@ -90,11 +90,11 @@ export default function Header() {
             className="flex items-center gap-xs group"
             aria-label="Profile"
           >
-            <Avatar
+              <Avatar
               src={profileAvatar}
               alt={profile?.name || 'Profile'}
               size="sm"
-              className="group-hover:shadow-warm transition-all"
+              className="group-hover:shadow-[0_0_20px_rgba(228,181,108,0.2)] transition-all"
             />
           </button>
         ) : isGuest ? (
@@ -103,13 +103,13 @@ export default function Header() {
               size="sm"
               variant="outline"
               onClick={handleLoginSignup}
-              className="hidden sm:flex"
+              className="hidden sm:flex border-[#E4B56C] text-[#E4B56C]"
             >
               Login / Signup
             </Button>
             <button
               onClick={handleGuestIconClick}
-              className="w-8 h-8 rounded-full bg-surface-container border border-white/10 flex items-center justify-center text-on-surface-variant hover:border-primary/30 transition-colors"
+              className="w-8 h-8 rounded-full bg-[#111111] border border-white/10 flex items-center justify-center text-[#A1A1AA] hover:border-[#E4B56C]/30 transition-colors"
               aria-label="Guest profile"
             >
               <MdPerson className="text-lg" />
@@ -123,7 +123,7 @@ export default function Header() {
 
         <button
           aria-label="Toggle menu"
-          className="md:hidden text-on-surface-variant ml-xs"
+          className="md:hidden text-[#A1A1AA] ml-xs"
           onClick={() => setMobileOpen((v) => !v)}
         >
           {mobileOpen ? <MdClose className="text-2xl" /> : <MdMenu className="text-2xl" />}
@@ -137,7 +137,7 @@ export default function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-20 left-0 right-0 bg-surface/95 backdrop-blur-2xl border-b border-primary/10 flex flex-col p-md gap-sm md:hidden z-50"
+            className="absolute top-20 left-0 right-0 bg-[#111111]/95 backdrop-blur-2xl border-b border-[#E4B56C]/10 flex flex-col p-md gap-sm md:hidden z-50"
           >
             {navLinks.map((link) => (
               <NavLink
@@ -145,12 +145,12 @@ export default function Header() {
                 to={link.to}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  `font-label-md text-label-md px-3 py-3 rounded-lg block transition-all ${
+                  `text-sm font-sans font-bold px-3 py-3 rounded-lg block transition-all ${
                     isActive
-                      ? 'text-primary bg-primary/10 font-bold'
+                      ? 'text-[#E4B56C] bg-[#E4B56C]/10 font-bold'
                       : link.label === 'Manage Salon'
-                      ? 'text-primary font-bold bg-primary/5'
-                      : 'text-on-surface-variant hover:text-primary hover:bg-white/5'
+                      ? 'text-[#E4B56C] font-bold bg-[#E4B56C]/5'
+                      : 'text-[#A1A1AA] hover:text-[#E4B56C] hover:bg-white/5'
                   }`
                 }
               >
@@ -160,7 +160,7 @@ export default function Header() {
             {isGuest && (
               <button
                 onClick={() => { setMobileOpen(false); handleLoginSignup(); }}
-                className="mt-sm w-full py-sm bg-primary text-on-primary rounded-xl font-label-md font-bold"
+                className="mt-sm w-full py-sm bg-[#E4B56C] text-black rounded-xl text-sm font-sans font-bold"
               >
                 Login / Signup
               </button>
@@ -183,22 +183,22 @@ export function AdminHeader({ title = 'Dashboard', avatarSrc, unreadChat = false
     'https://via.placeholder.com/150';
 
   return (
-    <header className="flex justify-between items-center w-full px-container-margin py-base bg-background/70 backdrop-blur-2xl border-b border-primary/10 sticky top-0 z-50">
+    <header className="flex justify-between items-center w-full px-container-margin py-base bg-[#0a0a0a]/90 backdrop-blur-2xl border-b border-white/5 sticky top-0 z-50">
       <div className="flex items-center gap-3">
         <img src={glowcutLogo} alt="GlowCut" className="w-8 h-8 rounded-full" />
-        <h2 className="font-headline-md text-headline-md text-primary tracking-tight">
+        <h2 className="text-xl font-serif text-white tracking-tight">
           {title}
         </h2>
       </div>
       <div className="flex items-center gap-gutter">
         <div className="flex items-center gap-4">
-          <button className="text-on-surface hover:text-primary transition-colors relative">
+          <button className="text-[#A1A1AA] hover:text-white transition-colors relative">
             <MdChat className="text-xl" />
             {unreadChat && (
-              <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full" />
+              <span className="absolute top-0 right-0 w-2 h-2 bg-[#E4B56C] rounded-full" />
             )}
           </button>
-          <button className="text-on-surface hover:text-primary transition-colors">
+          <button className="text-[#A1A1AA] hover:text-white transition-colors">
             <MdNotifications className="text-xl" />
           </button>
 

@@ -25,7 +25,7 @@ import { useBooking } from '../../../hooks/useBooking';
 import AuthContext from '../../../context/AuthContext';
 import Avatar from '../../../components/ui/Avatar';
 import * as bookingService from '../../../services/bookingService';
-import glowcutLogo from '../../../assets/logos/glowcut-logo.jpg';
+import glowcutLogo from '../../../assets/logos/glowcut-mark-XZgku7lW.png';
 import glowcutMark from '../../../assets/brand/glowcut-mark.png';
 import '../../../pages/home/Home/Home.css';
 

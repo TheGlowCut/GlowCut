@@ -30,7 +30,7 @@ function ToggleSwitch({ checked, onChange }) {
   return (
     <label className="relative inline-flex items-center cursor-pointer">
       <input checked={checked} onChange={onChange} className="sr-only peer" type="checkbox" />
-      <div className="w-11 h-6 bg-surface-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary" />
+      <div className="w-11 h-6 bg-[#222222] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#E4B56C]" />
     </label>
   );
 }
@@ -186,7 +186,7 @@ export default function ProfileSettings() {
         className="flex flex-col items-center mb-xl"
       >
         <div className="relative mb-md group">
-          <div className="w-32 h-32 rounded-full border-2 border-primary p-1 shadow-warm relative">
+          <div className="w-32 h-32 rounded-full border-2 border-[#E4B56C] p-1 shadow-[0_0_20px_rgba(228,181,108,0.2)] relative">
             <img
               className="w-full h-full rounded-full object-cover"
               alt={profile?.name || 'User Profile'}
@@ -202,35 +202,35 @@ export default function ProfileSettings() {
             type="button"
             disabled={uploadingImage}
             onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-primary shadow-warm-sm flex items-center justify-center border-2 border-background hover:scale-110 transition-transform disabled:opacity-50"
+            className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-[#E4B56C] shadow-[0_0_10px_rgba(228,181,108,0.2)] flex items-center justify-center border-2 border-background hover:scale-110 transition-transform disabled:opacity-50"
           >
-            <MdAddAPhoto className="text-on-primary text-base" />
+            <MdAddAPhoto className="text-black text-base" />
           </button>
           {profile?.role === 'owner' || profile?.role === 'admin' ? (
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-primary/20 text-primary px-sm py-1 rounded-full flex items-center gap-xs shadow-warm-sm whitespace-nowrap border border-primary/30">
+            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-[#E4B56C]/20 text-[#E4B56C] px-sm py-1 rounded-full flex items-center gap-xs shadow-[0_0_10px_rgba(228,181,108,0.2)] whitespace-nowrap border border-[#E4B56C]/30">
               <MdWorkspacePremium className="text-[16px]" />
-              <span className="font-label-md text-label-md capitalize">{profile.role}</span>
+              <span className="text-sm font-sans font-bold capitalize">{profile.role}</span>
             </div>
           ) : null}
         </div>
 
-        <h1 className="font-display-lg text-display-lg mb-xs mt-6">
+        <h1 className="text-4xl font-serif mb-xs mt-6">
           {profile?.name || profile?.userName || 'GlowCut User'}
         </h1>
-        <p className="text-on-surface-variant font-body-md">{profile?.email}</p>
+        <p className="text-[#A1A1AA] text-sm font-sans">{profile?.email}</p>
       </motion.section>
 
       <motion.section
         variants={fadeUp}
-        className="glass-panel rounded-xl p-lg mb-xl border border-white/5"
+        className="bg-[#111111] rounded-xl p-lg mb-xl border border-white/5"
       >
         <div className="flex items-center justify-between mb-lg">
-          <h2 className="font-headline-md text-headline-md text-on-surface">Personal Information</h2>
+          <h2 className="text-xl font-serif text-white">Personal Information</h2>
           {!editing && (
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="flex items-center gap-xs text-primary font-label-md hover:underline"
+              className="flex items-center gap-xs text-[#E4B56C] font-bold hover:underline"
             >
               <MdEdit className="text-base" /> Edit
             </button>
@@ -238,72 +238,72 @@ export default function ProfileSettings() {
         </div>
 
         {errorMessage && (
-          <div className="mb-md p-md bg-error/10 border border-error/40 rounded-xl flex items-center gap-sm text-error animate-fade-in">
+          <div className="mb-md p-md bg-red-500/10 border border-red-500/40 rounded-xl flex items-center gap-sm text-red-500 animate-fade-in">
             <MdErrorOutline className="text-xl flex-shrink-0" />
-            <p className="font-body-md text-sm">{errorMessage}</p>
+            <p className="text-sm font-sans text-sm">{errorMessage}</p>
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
           <div className="flex flex-col gap-xs">
-            <label className="font-label-md text-label-md text-on-surface-variant">Full Name</label>
+            <label className="text-sm font-sans font-bold text-[#A1A1AA]">Full Name</label>
             {editing ? (
               <input
                 value={form.name}
                 onChange={setField('name')}
-                className="bg-white/5 border border-primary/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary"
+                className="bg-white/5 border border-[#E4B56C]/30 rounded-lg px-4 py-3 text-white text-sm font-sans focus:outline-none focus:border-[#E4B56C]"
               />
             ) : (
-              <p className="font-body-md text-on-surface">{profile?.name || profile?.userName || 'N/A'}</p>
+              <p className="text-sm font-sans text-white">{profile?.name || profile?.userName || 'N/A'}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-xs">
-            <label className="font-label-md text-label-md text-on-surface-variant">Username</label>
+            <label className="text-sm font-sans font-bold text-[#A1A1AA]">Username</label>
             {editing ? (
               <input
                 value={form.userName}
                 onChange={setField('userName')}
-                className="bg-white/5 border border-primary/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary"
+                className="bg-white/5 border border-[#E4B56C]/30 rounded-lg px-4 py-3 text-white text-sm font-sans focus:outline-none focus:border-[#E4B56C]"
               />
             ) : (
-              <p className="font-body-md text-on-surface">@{profile?.userName || 'username'}</p>
+              <p className="text-sm font-sans text-white">@{profile?.userName || 'username'}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-xs">
-            <label className="font-label-md text-label-md text-on-surface-variant">Phone Number</label>
+            <label className="text-sm font-sans font-bold text-[#A1A1AA]">Phone Number</label>
             {editing ? (
               <input
                 value={form.phone}
                 onChange={setField('phone')}
                 placeholder="+923000000000"
-                className="bg-white/5 border border-primary/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary"
+                className="bg-white/5 border border-[#E4B56C]/30 rounded-lg px-4 py-3 text-white text-sm font-sans focus:outline-none focus:border-[#E4B56C]"
               />
             ) : (
-              <p className="font-body-md text-on-surface">{profile?.phone || profile?.PhoneNumber || 'N/A'}</p>
+              <p className="text-sm font-sans text-white">{profile?.phone || profile?.PhoneNumber || 'N/A'}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-xs">
-            <label className="font-label-md text-label-md text-on-surface-variant">Email</label>
-            <p className="font-body-md text-on-surface-variant italic">{profile?.email}</p>
+            <label className="text-sm font-sans font-bold text-[#A1A1AA]">Email</label>
+            <p className="text-sm font-sans text-[#A1A1AA] italic">{profile?.email}</p>
           </div>
 
           <div className="flex flex-col gap-xs md:col-span-2">
-            <label className="font-label-md text-label-md text-on-surface-variant">City</label>
+            <label className="text-sm font-sans font-bold text-[#A1A1AA]">City</label>
             {editing ? (
               <select
                 value={form.cities}
                 onChange={setField('cities')}
-                className="bg-white/5 border border-primary/30 rounded-lg px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary appearance-none"
+                className="bg-white/5 border border-[#E4B56C]/30 rounded-lg px-4 py-3 text-white text-sm font-sans focus:outline-none focus:border-[#E4B56C] appearance-none"
               >
                 {CITIES.map((c) => (
-                  <option key={c} value={c} className="bg-surface text-on-surface">{c}</option>
+                  <option key={c} value={c} className="bg-[#111111] text-white">{c}</option>
                 ))}
               </select>
             ) : (
-              <p className="font-body-md text-on-surface">{profile?.cities || 'Karachi'}</p>
+              <p className="text-sm font-sans text-white">{profile?.cities || 'Karachi'}</p>
             )}
           </div>
         </div>
@@ -314,7 +314,7 @@ export default function ProfileSettings() {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-sm px-xl py-md bg-primary text-on-primary rounded-xl font-bold font-label-md shadow-warm-sm active:scale-95 transition-all disabled:opacity-60"
+              className="flex items-center gap-sm px-xl py-md bg-[#E4B56C] text-black rounded-xl font-bold font-bold shadow-[0_0_10px_rgba(228,181,108,0.2)] active:scale-95 transition-all disabled:opacity-60"
             >
               {saving ? (
                 <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -329,7 +329,7 @@ export default function ProfileSettings() {
                 setEditing(false);
                 setErrorMessage('');
               }}
-              className="px-xl py-md glass-panel rounded-xl font-label-md text-on-surface-variant hover:text-on-surface transition-colors border border-white/5"
+              className="px-xl py-md bg-[#111111] rounded-xl font-bold text-[#A1A1AA] hover:text-white transition-colors border border-white/5"
             >
               Cancel
             </button>
@@ -339,8 +339,8 @@ export default function ProfileSettings() {
 
       <motion.section variants={fadeUp} className="mb-xl">
         <div className="flex justify-between items-end mb-md">
-          <h2 className="font-headline-md text-headline-md text-on-surface">My Booking History</h2>
-          <button type="button" onClick={() => navigate('/booking/summary')} className="text-primary font-label-md text-label-md">
+          <h2 className="text-xl font-serif text-white">My Booking History</h2>
+          <button type="button" onClick={() => navigate('/booking/summary')} className="text-[#E4B56C] text-sm font-sans font-bold">
             View All
           </button>
         </div>
@@ -360,17 +360,17 @@ export default function ProfileSettings() {
           <div className="flex gap-md overflow-x-auto pb-md [&::-webkit-scrollbar]:hidden">
             {bookingHistory.map((item) => (
               <div className="flex-shrink-0 w-40" key={item._id}>
-                <div className="glass-panel rounded-xl h-48 mb-xs group cursor-pointer overflow-hidden flex items-center justify-center bg-surface-container border border-white/5">
+                <div className="bg-[#111111] rounded-xl h-48 mb-xs group cursor-pointer overflow-hidden flex items-center justify-center bg-[#111111] border border-white/5">
                   <img
                     className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                     alt={item.serviceId?.name || 'Booking'}
                     src={item.salonId?.coverImage || item.salonId?.logo || 'https://via.placeholder.com/300x400?text=GlowCut'}
                   />
                 </div>
-                <p className="font-label-md text-label-md text-on-surface">
+                <p className="text-sm font-sans font-bold text-white">
                   {new Date(item.bookingDate).toLocaleDateString()}
                 </p>
-                <p className="text-caption text-on-surface-variant">
+                <p className="text-caption text-[#A1A1AA]">
                   {item.serviceId?.name || 'Service'} @ {item.salonId?.name || 'Salon'}
                 </p>
               </div>
@@ -383,63 +383,63 @@ export default function ProfileSettings() {
         <button
           type="button"
           onClick={() => navigate('/profile/saved-salons')}
-          className="w-full glass-panel rounded-xl p-md flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors border border-white/5"
+          className="w-full bg-[#111111] rounded-xl p-md flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors border border-white/5"
         >
           <div className="flex items-center gap-md">
-            <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+            <div className="w-10 h-10 rounded-lg bg-[#111111] flex items-center justify-center text-[#E4B56C]">
               <MdFavorite />
             </div>
             <div className="text-left">
-              <h3 className="font-headline-md text-headline-md text-on-surface">Saved Salons</h3>
-              <p className="text-caption text-on-surface-variant">
+              <h3 className="text-xl font-serif text-white">Saved Salons</h3>
+              <p className="text-caption text-[#A1A1AA]">
                 {savedSalonCount} {savedSalonCount === 1 ? 'favourite location' : 'favourite locations'}
               </p>
             </div>
           </div>
-          <MdChevronRight className="text-on-surface-variant" />
+          <MdChevronRight className="text-[#A1A1AA]" />
         </button>
 
         <button
           type="button"
           onClick={() => navigate('/booking/summary')}
-          className="w-full glass-panel rounded-xl p-md flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors border border-white/5"
+          className="w-full bg-[#111111] rounded-xl p-md flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors border border-white/5"
         >
           <div className="flex items-center gap-md">
-            <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+            <div className="w-10 h-10 rounded-lg bg-[#111111] flex items-center justify-center text-[#E4B56C]">
               <MdCalendarMonth />
             </div>
             <div className="text-left">
-              <h3 className="font-headline-md text-headline-md text-on-surface">Booking History</h3>
-              <p className="text-caption text-on-surface-variant">Past &amp; upcoming slots</p>
+              <h3 className="text-xl font-serif text-white">Booking History</h3>
+              <p className="text-caption text-[#A1A1AA]">Past &amp; upcoming slots</p>
             </div>
           </div>
-          <MdChevronRight className="text-on-surface-variant" />
+          <MdChevronRight className="text-[#A1A1AA]" />
         </button>
 
-        <div className="glass-panel rounded-xl p-md space-y-md border border-white/5">
+        <div className="bg-[#111111] rounded-xl p-md space-y-md border border-white/5">
           <div className="flex items-center gap-md mb-xs">
-            <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+            <div className="w-10 h-10 rounded-lg bg-[#111111] flex items-center justify-center text-[#E4B56C]">
               <MdSettings />
             </div>
-            <h3 className="font-headline-md text-headline-md text-on-surface">App Settings</h3>
+            <h3 className="text-xl font-serif text-white">App Settings</h3>
           </div>
           <div className="pl-xl space-y-md">
             <div className="flex items-center justify-between py-xs border-b border-white/5">
-              <span className="text-body-md text-on-surface">Push Notifications</span>
+              <span className="text-body-md text-white">Push Notifications</span>
               <ToggleSwitch
                 checked={notifications.push}
                 onChange={() => toggleNotification('push')}
               />
             </div>
             <div className="flex items-center justify-between py-xs border-b border-white/5">
-              <span className="text-body-md text-on-surface">Dark Mode</span>
-              <div className="flex items-center gap-xs text-primary">
-                <span className="font-label-md text-label-md">Always On</span>
-                <MdLogout className="text-primary" />
+              <span className="text-body-md text-white">Dark Mode</span>
+              <div className="flex items-center gap-xs text-[#E4B56C]">
+                <span className="text-sm font-sans font-bold">Always On</span>
+                <MdLogout className="text-[#E4B56C]" />
               </div>
             </div>
             <div className="flex items-center justify-between py-xs">
-              <span className="text-body-md text-on-surface">Marketing Emails</span>
+              <span className="text-body-md text-white">Marketing Emails</span>
               <ToggleSwitch
                 checked={notifications.marketing}
                 onChange={() => toggleNotification('marketing')}
@@ -453,7 +453,7 @@ export default function ProfileSettings() {
         variants={fadeUp}
         type="button"
         onClick={handleSignOut}
-        className="w-full py-md rounded-xl glass-panel border border-error/30 text-error flex items-center justify-center gap-sm hover:bg-error/10 transition-all active:scale-[0.98]"
+        className="w-full py-md rounded-xl bg-[#111111] border border-red-500/30 text-red-500 flex items-center justify-center gap-sm hover:bg-red-500/10 transition-all active:scale-[0.98]"
       >
         <MdLogout />
         <span className="font-bold">Sign Out</span>

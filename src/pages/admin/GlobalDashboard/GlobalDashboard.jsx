@@ -13,7 +13,7 @@ import {
 } from 'react-icons/md';
 import apiClient from '../../../services/apiClient';
 import EmptyState from '../../../components/ui/EmptyState';
-import glowcutLogo from '../../../assets/logos/glowcut-logo.jpg';
+import glowcutLogo from '../../../assets/logos/glowcut-mark-XZgku7lW.png';
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -71,7 +71,7 @@ export default function GlobalDashboard() {
 
   return (
     <motion.div
-      className="px-margin-mobile md:px-lg max-w-full space-y-lg text-on-surface font-body-md"
+      className="px-margin-mobile md:px-lg max-w-full space-y-lg text-white text-sm font-sans"
       initial="initial"
       animate="animate"
       variants={{
@@ -85,11 +85,11 @@ export default function GlobalDashboard() {
         <div className="flex items-center gap-4">
           <img src={glowcutLogo} alt="GlowCut" className="w-10 h-10" />
           <div>
-            <h2 className="font-headline-lg text-headline-lg text-on-surface">Platform Control Center</h2>
-            <p className="text-on-surface-variant font-body-md">Live overview across every GlowCut salon partner.</p>
+            <h2 className="text-3xl font-serif text-white">Platform Control Center</h2>
+            <p className="text-[#A1A1AA] text-sm font-sans">Live overview across every GlowCut salon partner.</p>
           </div>
         </div>
-        <button onClick={fetchAll} className="p-2 glass-panel rounded-lg text-on-surface-variant hover:text-on-surface transition-colors border border-white/5">
+        <button onClick={fetchAll} className="p-2 bg-[#111111] rounded-lg text-[#A1A1AA] hover:text-white transition-colors border border-white/5">
           <MdRefresh className="text-lg" />
         </button>
       </motion.div>
@@ -99,19 +99,19 @@ export default function GlobalDashboard() {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md"
       >
         {loading ? (
-          [1, 2, 3, 4].map((n) => <div key={n} className="glass-panel h-28 rounded-xl animate-pulse border border-white/5" />)
+          [1, 2, 3, 4].map((n) => <div key={n} className="bg-[#111111] h-28 rounded-xl animate-pulse border border-white/5" />)
         ) : (
           METRICS.map((metric) => {
             const Icon = metric.icon;
             return (
-              <div key={metric.label} className="glass-panel p-md rounded-xl space-y-md relative overflow-hidden border border-white/5">
-                <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl -mr-16 -mt-16 bg-primary/10" />
+              <div key={metric.label} className="bg-[#111111] p-md rounded-xl space-y-md relative overflow-hidden border border-white/5">
+                <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl -mr-16 -mt-16 bg-[#E4B56C]/10" />
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-caption text-on-surface-variant uppercase tracking-widest">{metric.label}</p>
-                    <h3 className="font-display-lg text-headline-lg text-on-surface">{metric.value}</h3>
+                    <p className="text-caption text-[#A1A1AA] uppercase tracking-widest">{metric.label}</p>
+                    <h3 className="font-serif text-headline-lg text-white">{metric.value}</h3>
                   </div>
-                  <Icon className="p-1 rounded-lg text-xl text-primary bg-primary/10" />
+                  <Icon className="p-1 rounded-lg text-xl text-[#E4B56C] bg-[#E4B56C]/10" />
                 </div>
               </div>
             );
@@ -123,9 +123,9 @@ export default function GlobalDashboard() {
         variants={fadeUp}
         className="grid grid-cols-1 lg:grid-cols-3 gap-md pb-xl mt-md"
       >
-        <div className="lg:col-span-2 glass-panel rounded-2xl p-md flex flex-col border border-white/5">
+        <div className="lg:col-span-2 bg-[#111111] rounded-2xl p-md flex flex-col border border-white/5">
           <div className="flex justify-between items-center mb-md">
-            <h3 className="font-headline-md text-headline-md text-on-surface">Recent Bookings</h3>
+            <h3 className="text-xl font-serif text-white">Recent Bookings</h3>
           </div>
           {loading ? (
             <div className="space-y-sm">
@@ -141,15 +141,15 @@ export default function GlobalDashboard() {
             <div className="space-y-sm">
               {recentBookings.map((item) => (
                 <div key={item._id} className="flex items-center gap-md p-sm rounded-xl hover:bg-white/5 transition-colors">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center border flex-shrink-0 text-primary bg-primary/10 border-primary/20">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center border flex-shrink-0 text-[#E4B56C] bg-[#E4B56C]/10 border-[#E4B56C]/20">
                     <MdEventAvailable className="text-[20px]" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-body-md font-medium text-on-surface">
+                    <p className="text-body-md font-medium text-white">
                       {item.customerId?.userName || item.customerId?.name || 'Customer'} booked{' '}
                       {item.serviceId?.name || 'a service'} at {item.salonId?.name || 'a salon'}
                     </p>
-                    <p className="text-caption text-on-surface-variant capitalize">
+                    <p className="text-caption text-[#A1A1AA] capitalize">
                       Status: {item.status} • {new Date(item.bookingDate).toLocaleDateString()}
                     </p>
                   </div>
@@ -159,8 +159,8 @@ export default function GlobalDashboard() {
           )}
         </div>
 
-        <div className="glass-panel rounded-2xl p-md space-y-md border border-white/5">
-          <h3 className="font-headline-md text-label-md uppercase tracking-widest text-on-surface-variant">
+        <div className="bg-[#111111] rounded-2xl p-md space-y-md border border-white/5">
+          <h3 className="text-xl font-serif text-label-md uppercase tracking-widest text-[#A1A1AA]">
             Top Performing Salons
           </h3>
           {loading ? (
@@ -178,14 +178,14 @@ export default function GlobalDashboard() {
             <div className="space-y-md">
               {topSalons.map((partner) => (
                 <div className="flex items-center gap-sm" key={partner._id}>
-                  <div className="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary font-bold flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg bg-[#111111] flex items-center justify-center text-[#E4B56C] font-bold flex-shrink-0">
                     {partner.name?.[0] || '?'}
                   </div>
                   <div className="flex-1">
-                    <p className="font-label-md text-on-surface">{partner.name}</p>
+                    <p className="font-bold text-white">{partner.name}</p>
                     <div className="flex items-center gap-xs">
-                      <MdStar className="text-[14px] text-primary" />
-                      <span className="text-caption text-on-surface">
+                      <MdStar className="text-[14px] text-[#E4B56C]" />
+                      <span className="text-caption text-white">
                         {(partner.averageRating ?? 0).toFixed?.(1) ?? partner.averageRating}
                       </span>
                     </div>
@@ -199,9 +199,9 @@ export default function GlobalDashboard() {
 
       <motion.section
         variants={fadeUp}
-        className="glass-panel rounded-2xl p-md mb-xl border border-white/5"
+        className="bg-[#111111] rounded-2xl p-md mb-xl border border-white/5"
       >
-        <h3 className="font-headline-md text-headline-md text-on-surface mb-md">Salon Directory</h3>
+        <h3 className="text-xl font-serif text-white mb-md">Salon Directory</h3>
         {loading ? (
           <div className="space-y-sm">
             {[1, 2, 3].map((n) => <div key={n} className="h-12 bg-white/5 rounded-xl animate-pulse" />)}
@@ -216,7 +216,7 @@ export default function GlobalDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-body-md">
               <thead>
-                <tr className="text-caption text-on-surface-variant uppercase tracking-wider border-b border-white/10">
+                <tr className="text-caption text-[#A1A1AA] uppercase tracking-wider border-b border-white/10">
                   <th className="py-2 pr-4">Salon</th>
                   <th className="py-2 pr-4">City</th>
                   <th className="py-2 pr-4">Rating</th>
@@ -227,13 +227,13 @@ export default function GlobalDashboard() {
                 {salons.map((s) => (
                   <tr key={s._id} className="border-b border-white/5">
                     <td className="py-3 pr-4 flex items-center gap-sm">
-                      <MdVerifiedUser className={s.isVerified ? 'text-primary' : 'text-on-surface-variant'} />
+                      <MdVerifiedUser className={s.isVerified ? 'text-[#E4B56C]' : 'text-[#A1A1AA]'} />
                       {s.name}
                     </td>
-                    <td className="py-3 pr-4 text-on-surface-variant">{s.address?.city || '—'}</td>
+                    <td className="py-3 pr-4 text-[#A1A1AA]">{s.address?.city || '—'}</td>
                     <td className="py-3 pr-4">{(s.averageRating ?? 0).toFixed?.(1) ?? s.averageRating}</td>
                     <td className="py-3 pr-4">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${s.isActive ? 'bg-primary/10 text-primary border-primary/20' : 'bg-error/10 text-error border-error/20'}`}>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${s.isActive ? 'bg-[#E4B56C]/10 text-[#E4B56C] border-[#E4B56C]/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
                         {s.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>

@@ -1,0 +1,1 @@
+var e=`/assets/landing-hero-B5zCrY1d.png`;export{e as t};
