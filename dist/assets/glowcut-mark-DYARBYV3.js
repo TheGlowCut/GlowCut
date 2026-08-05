@@ -1,0 +1,1 @@
+var e=`/assets/glowcut-mark-XZgku7lW.png`;export{e as t};

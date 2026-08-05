@@ -22,11 +22,11 @@ export default function AdminLayout() {
   const title = matchedTitle ? matchedTitle[1] : 'Dashboard';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0a0a0a]">
       {/* Mobile sidebar toggle */}
       <button
         onClick={() => setMobileSidebarOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-30 w-10 h-10 rounded-xl bg-primary text-on-primary shadow-warm flex items-center justify-center hover:bg-primary/90 transition-all active:scale-95"
+        className="lg:hidden fixed top-4 left-4 z-30 w-10 h-10 rounded-xl bg-[#E4B56C] text-black shadow-[0_0_20px_rgba(228,181,108,0.2)] flex items-center justify-center hover:bg-[#cfa462] transition-all active:scale-95"
         aria-label="Open menu"
       >
         <MdMenu className="text-xl" />

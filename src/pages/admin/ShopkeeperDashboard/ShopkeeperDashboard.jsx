@@ -10,7 +10,7 @@ import {
   MdSend,
   MdContentCut,
 } from 'react-icons/md';
-import glowcutLogo from '../../../assets/logos/glowcut-logo.jpg';
+import glowcutLogo from '../../../assets/logos/glowcut-mark-XZgku7lW.png';
 
 const INITIAL_CHAT_MESSAGES = [
   { id: 1, from: 'Faizan', initials: 'FM', side: 'left', text: "I'm 5 mins away, parking was a bit tight!" },
@@ -117,7 +117,7 @@ export default function ShopkeeperDashboard() {
 
   return (
     <motion.div
-      className="px-margin-mobile md:px-lg max-w-full space-y-xl text-on-surface font-body-md"
+      className="px-margin-mobile md:px-lg max-w-full space-y-xl text-white text-sm font-sans"
       initial="initial"
       animate="animate"
       variants={{
@@ -127,8 +127,8 @@ export default function ShopkeeperDashboard() {
       <motion.div variants={fadeUp} className="flex items-center gap-4">
         <img src={glowcutLogo} alt="GlowCut" className="w-10 h-10" />
         <div>
-          <h1 className="font-display-lg text-display-lg mb-xs">Command Center</h1>
-          <p className="text-on-surface-variant text-label-md">Monitor real-time operations and daily targets.</p>
+          <h1 className="text-4xl font-serif mb-xs">Command Center</h1>
+          <p className="text-[#A1A1AA] text-label-md">Monitor real-time operations and daily targets.</p>
         </div>
       </motion.div>
 
@@ -143,15 +143,15 @@ export default function ShopkeeperDashboard() {
         ].map((metric) => {
           const Icon = metric.icon;
           return (
-            <div key={metric.label} className="p-lg rounded-xl glass-panel border-l-4 border-l-primary relative overflow-hidden group transition-all border border-white/5">
+            <div key={metric.label} className="p-lg rounded-xl bg-[#111111] border-l-4 border-l-primary relative overflow-hidden group transition-all border border-white/5">
               <div className="absolute top-0 right-0 p-md opacity-10 group-hover:opacity-20 transition-opacity">
-                <Icon className="text-6xl text-primary" />
+                <Icon className="text-6xl text-[#E4B56C]" />
               </div>
-              <p className="font-label-md text-caption uppercase tracking-widest text-on-surface-variant relative z-10">{metric.label}</p>
+              <p className="font-bold text-caption uppercase tracking-widest text-[#A1A1AA] relative z-10">{metric.label}</p>
               {loadingStats ? (
                 <div className="h-10 w-24 bg-white/10 animate-pulse mt-2 rounded relative z-10" />
               ) : (
-                <h3 className="font-display-lg text-headline-lg text-on-surface mt-xs relative z-10">
+                <h3 className="font-serif text-headline-lg text-white mt-xs relative z-10">
                   {metric.prefix || ''}{metric.value}
                 </h3>
               )}
@@ -165,8 +165,8 @@ export default function ShopkeeperDashboard() {
         className="grid grid-cols-1 lg:grid-cols-12 gap-xl"
       >
         <section className="lg:col-span-8 space-y-md">
-          <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-xs border-b border-white/10 pb-sm">
-            <MdContentCut className="text-primary" /> Today's Terminal Queue
+          <h3 className="text-xl font-serif text-white flex items-center gap-xs border-b border-white/10 pb-sm">
+            <MdContentCut className="text-[#E4B56C]" /> Today's Terminal Queue
           </h3>
           <div className="space-y-sm">
             {loadingSchedule ? (
@@ -179,16 +179,16 @@ export default function ShopkeeperDashboard() {
               />
             ) : (
               schedule.map((apt) => (
-                <div key={apt._id} className="p-md glass-panel border border-white/5 rounded-xl flex justify-between items-center hover:border-primary/30 transition-colors group">
+                <div key={apt._id} className="p-md bg-[#111111] border border-white/5 rounded-xl flex justify-between items-center hover:border-[#E4B56C]/30 transition-colors group">
                   <div className="flex items-center gap-md">
-                    <div className="w-12 h-12 rounded-lg bg-surface-container-high border border-white/10 flex items-center justify-center font-display-lg text-primary text-xl">
+                    <div className="w-12 h-12 rounded-lg bg-[#1a1a1a] border border-white/10 flex items-center justify-center font-serif text-[#E4B56C] text-xl">
                       {apt.startTime?.split(':')[0]}
                     </div>
                     <div>
-                      <h4 className="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors">
+                      <h4 className="text-xl font-serif text-white group-hover:text-[#E4B56C] transition-colors">
                         {apt.customerId?.userName || apt.customerId?.name || apt.customer?.name || 'Walk-in Client'}
                       </h4>
-                      <p className="text-caption text-on-surface-variant font-label-md">
+                      <p className="text-caption text-[#A1A1AA] font-bold">
                         {apt.serviceId?.name || apt.service?.name || 'Service'} • {apt.startTime || 'N/A'}
                       </p>
                     </div>
@@ -198,7 +198,7 @@ export default function ShopkeeperDashboard() {
                       <button
                         onClick={() => handleCheckIn(apt._id)}
                         disabled={actioningId === apt._id}
-                        className="bg-primary text-on-primary text-xs px-4 py-2 rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-warm-sm hover:brightness-105 transition-all active:scale-95"
+                        className="bg-[#E4B56C] text-black text-xs px-4 py-2 rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(228,181,108,0.2)] hover:brightness-105 transition-all active:scale-95"
                       >
                         CONFIRM CHECK-IN
                       </button>
@@ -207,13 +207,13 @@ export default function ShopkeeperDashboard() {
                       <button
                         onClick={() => handleMarkAsDone(apt._id)}
                         disabled={actioningId === apt._id}
-                        className="border border-primary/50 text-primary text-xs px-4 py-2 rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/10 transition-colors active:scale-95"
+                        className="border border-[#E4B56C]/50 text-[#E4B56C] text-xs px-4 py-2 rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#E4B56C]/10 transition-colors active:scale-95"
                       >
                         MARK COMPLETE
                       </button>
                     )}
                     {apt.status === 'completed' && (
-                      <span className="text-xs text-primary bg-primary/10 px-4 py-2 rounded-lg border border-primary/20 font-bold flex items-center gap-1">
+                      <span className="text-xs text-[#E4B56C] bg-[#E4B56C]/10 px-4 py-2 rounded-lg border border-[#E4B56C]/20 font-bold flex items-center gap-1">
                         <MdOutlineCheckCircle /> FINISHED
                       </span>
                     )}
@@ -225,9 +225,9 @@ export default function ShopkeeperDashboard() {
         </section>
 
         <aside className="lg:col-span-4">
-          <div className="glass-panel border border-white/10 rounded-xl flex flex-col h-[400px] md:h-[500px] overflow-hidden shadow-2xl">
-            <div className="p-md border-b border-white/10 font-headline-md text-headline-md text-on-surface bg-surface-container-lowest flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-warm-sm" />
+          <div className="bg-[#111111] border border-white/10 rounded-xl flex flex-col h-[400px] md:h-[500px] overflow-hidden shadow-2xl">
+            <div className="p-md border-b border-white/10 text-xl font-serif text-white bg-[#0a0a0a] flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#E4B56C] animate-pulse shadow-[0_0_10px_rgba(228,181,108,0.2)]" />
               Secure Communications
             </div>
 
@@ -237,30 +237,30 @@ export default function ShopkeeperDashboard() {
                   key={msg.id}
                   className={`p-3 rounded-2xl text-body-sm max-w-[85%] shadow-sm ${
                     msg.side === 'right'
-                      ? 'bg-primary/20 border border-primary/30 ml-auto rounded-tr-none'
-                      : 'bg-surface-container-highest border border-white/5 rounded-tl-none'
+                      ? 'bg-[#E4B56C]/20 border border-[#E4B56C]/30 ml-auto rounded-tr-none'
+                      : 'bg-[#1a1a1a] border border-white/5 rounded-tl-none'
                   }`}
                 >
-                  <p className={`text-[10px] font-bold mb-1 uppercase tracking-wider ${msg.side === 'right' ? 'text-primary' : 'text-primary'}`}>
+                  <p className={`text-[10px] font-bold mb-1 uppercase tracking-wider ${msg.side === 'right' ? 'text-[#E4B56C]' : 'text-[#E4B56C]'}`}>
                     {msg.from || 'System'}
                   </p>
-                  <p className="text-on-surface/90">{msg.text}</p>
+                  <p className="text-white/90">{msg.text}</p>
                 </div>
               ))}
               <div ref={chatEndRef} />
             </div>
 
-            <form onSubmit={handleSendMessage} className="p-md border-t border-white/10 flex gap-sm bg-surface-container-lowest">
+            <form onSubmit={handleSendMessage} className="p-md border-t border-white/10 flex gap-sm bg-[#0a0a0a]">
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Transmit message..."
-                className="flex-1 bg-surface-container-high border border-white/10 rounded-lg px-4 py-2 text-sm text-on-surface focus:outline-none focus:border-primary/50 transition-colors"
+                className="flex-1 bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-[#E4B56C]/50 transition-colors"
               />
               <button
                 type="submit"
-                className="bg-primary text-on-primary w-10 h-10 rounded-lg flex items-center justify-center hover:brightness-105 active:scale-95 transition-all shadow-warm-sm"
+                className="bg-[#E4B56C] text-black w-10 h-10 rounded-lg flex items-center justify-center hover:brightness-105 active:scale-95 transition-all shadow-[0_0_10px_rgba(228,181,108,0.2)]"
               >
                 <MdSend className="text-lg" />
               </button>

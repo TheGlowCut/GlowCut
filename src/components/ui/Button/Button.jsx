@@ -3,24 +3,24 @@ import { motion } from 'framer-motion';
 
 const VARIANTS = {
   primary:
-    'bg-primary text-on-primary shadow-warm hover:shadow-warm-lg',
+    'bg-[#E4B56C] text-black shadow-[0_0_20px_rgba(228,181,108,0.2)] hover:shadow-[0_0_30px_rgba(228,181,108,0.3)]',
   secondary:
-    'bg-secondary text-on-secondary hover:opacity-90',
+    'bg-[#222222] text-white hover:opacity-90',
   outline:
-    'bg-transparent border-2 border-primary text-primary hover:bg-primary/10',
+    'bg-transparent border-2 border-[#E4B56C] text-[#E4B56C] hover:bg-[#E4B56C]/10',
   ghost:
-    'bg-white/5 border border-white/10 text-on-surface hover:bg-white/10',
-  text: 'bg-transparent text-primary hover:text-primary-fixed',
-  danger: 'bg-error text-on-error hover:opacity-90',
-  cream: 'bg-secondary-container text-on-secondary-container hover:opacity-90',
-  olive: 'bg-primary-container text-on-primary-container hover:opacity-90',
+    'bg-white/5 border border-white/10 text-white hover:bg-white/10',
+  text: 'bg-transparent text-[#E4B56C] hover:text-[#E4B56C]',
+  danger: 'bg-red-500 text-white hover:opacity-90',
+  cream: 'bg-[#111111] text-white hover:opacity-90',
+  olive: 'bg-[#E4B56C]/10 text-[#E4B56C] hover:opacity-90',
 };
 
 const SIZES = {
   sm: 'px-sm py-xs text-xs rounded-lg',
-  md: 'px-md py-sm text-label-md rounded-xl',
-  lg: 'px-xl py-md text-headline-md rounded-xl',
-  full: 'w-full h-14 rounded-xl text-label-md',
+  md: 'px-md py-sm text-sm rounded-xl',
+  lg: 'px-xl py-md text-xl font-serif rounded-xl',
+  full: 'w-full h-14 rounded-xl text-sm',
 };
 
 export default function Button({

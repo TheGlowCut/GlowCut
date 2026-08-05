@@ -62,19 +62,19 @@ export default function SavedSalons() {
       <button
         type="button"
         onClick={() => navigate('/profile')}
-        className="flex items-center gap-xs text-primary font-label-md hover:underline mb-md"
+        className="flex items-center gap-xs text-[#E4B56C] font-bold hover:underline mb-md"
       >
         <MdArrowBack className="text-base" /> Back to Profile
       </button>
 
       <header className="mb-xl">
         <div className="flex items-center gap-sm mb-xs">
-          <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <div className="w-10 h-10 rounded-lg bg-[#111111] flex items-center justify-center text-[#E4B56C]">
             <MdFavorite />
           </div>
-          <h1 className="font-display-lg text-display-lg text-on-surface">Saved Salons</h1>
+          <h1 className="text-4xl font-serif text-white">Saved Salons</h1>
         </div>
-        <p className="font-body-md text-on-surface-variant">
+        <p className="text-sm font-sans text-[#A1A1AA]">
           Your bookmarked salons — tap the heart again on any salon page to remove one.
         </p>
       </header>
@@ -110,10 +110,10 @@ export default function SavedSalons() {
                   onClick={() => handleUnsave(salonId)}
                   aria-label={`Unsave ${salon.name}`}
                   title="Unsave"
-                  className="absolute top-3 left-3 w-9 h-9 rounded-full bg-background/80 backdrop-blur-md border border-primary/30 flex items-center justify-center text-primary hover:bg-background hover:scale-110 transition-all disabled:opacity-60"
+                  className="absolute top-3 left-3 w-9 h-9 rounded-full bg-background/80 backdrop-blur-md border border-[#E4B56C]/30 flex items-center justify-center text-[#E4B56C] hover:bg-background hover:scale-110 transition-all disabled:opacity-60"
                 >
                   {removing ? (
-                    <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-[#E4B56C] border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <MdFavorite className="text-base" />
                   )}

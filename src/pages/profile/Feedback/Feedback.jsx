@@ -82,10 +82,10 @@ export default function Feedback() {
     <main className="max-w-screen-md mx-auto px-margin-mobile py-xl md:px-lg flex flex-col items-center min-h-screen">
       {/* Celebration */}
       <section className="text-center mb-xl relative w-full flex flex-col items-center pt-10">
-        <h1 className="font-display-lg text-display-lg text-secondary mb-xs relative z-10">
+        <h1 className="text-4xl font-serif text-secondary mb-xs relative z-10">
           Service Completed!
         </h1>
-        <p className="font-body-md text-body-md text-on-surface-variant max-w-md">
+        <p className="text-sm font-sans text-[#A1A1AA] max-w-md">
           Your fresh new look is ready. We'd love to hear how we did.
         </p>
       </section>
@@ -95,7 +95,7 @@ export default function Feedback() {
         <div className="relative">
           <img
             alt={barber?.name || 'Stylist'}
-            className="w-16 h-16 rounded-full object-cover border-2 border-secondary bg-surface-container"
+            className="w-16 h-16 rounded-full object-cover border-2 border-secondary bg-[#111111]"
             src={barber?.profileImage || 'https://via.placeholder.com/150?text=?'}
           />
           <div className="absolute bottom-0 right-0 bg-secondary rounded-full p-0.5 border-2 border-background flex items-center justify-center">
@@ -103,10 +103,10 @@ export default function Feedback() {
           </div>
         </div>
         <div className="flex-1">
-          <h2 className="font-headline-md text-headline-md text-on-surface">{barber?.name || 'Your stylist'}</h2>
+          <h2 className="text-xl font-serif text-white">{barber?.name || 'Your stylist'}</h2>
           <div className="flex items-center gap-xs">
             <MdStore className="text-secondary text-sm" />
-            <p className="font-label-md text-label-md text-on-surface-variant">
+            <p className="text-sm font-sans font-bold text-[#A1A1AA]">
               {salon?.name || 'GlowCut Salon'}
             </p>
           </div>
@@ -115,7 +115,7 @@ export default function Feedback() {
 
       {/* Rating Module */}
       <section className="w-full text-center mb-lg">
-        <h3 className="font-label-md text-label-md text-primary uppercase tracking-[0.2em] mb-md">
+        <h3 className="text-sm font-sans font-bold text-[#E4B56C] uppercase tracking-[0.2em] mb-md">
           Rate Your Experience
         </h3>
         <div className="flex justify-center gap-sm">
@@ -126,7 +126,7 @@ export default function Feedback() {
               onMouseEnter={() => setHoverRating(star)}
               onMouseLeave={() => setHoverRating(0)}
               className={`transition-transform active:scale-90 ${
-                star <= displayRating ? 'text-primary shadow-warm-sm' : 'text-primary/30'
+                star <= displayRating ? 'text-[#E4B56C] shadow-[0_0_10px_rgba(228,181,108,0.2)]' : 'text-[#E4B56C]/30'
               }`}
             >
               <MdStar className="text-[48px]" />
@@ -137,7 +137,7 @@ export default function Feedback() {
 
       {/* Tag Selection (folded into the comment on submit) */}
       <section className="w-full mb-lg">
-        <p className="font-label-md text-label-md text-on-surface-variant mb-sm text-center">
+        <p className="text-sm font-sans font-bold text-[#A1A1AA] mb-sm text-center">
           Tag Your Experience
         </p>
         <div className="flex flex-wrap justify-center gap-sm">
@@ -147,10 +147,10 @@ export default function Feedback() {
               <button
                 key={tag}
                 onClick={() => toggleTag(tag)}
-                className={`px-md py-sm rounded-full font-label-md transition-colors border ${
+                className={`px-md py-sm rounded-full font-bold transition-colors border ${
                   isSelected
-                    ? 'border-primary text-primary bg-primary/10'
-                    : 'border-white/10 text-on-surface-variant hover:bg-white/5'
+                    ? 'border-[#E4B56C] text-[#E4B56C] bg-[#E4B56C]/10'
+                    : 'border-white/10 text-[#A1A1AA] hover:bg-white/5'
                 }`}
               >
                 {tag}
@@ -166,7 +166,7 @@ export default function Feedback() {
           <textarea
             value={reviewText}
             onChange={(e) => setReviewText(e.target.value)}
-            className="w-full h-32 bg-transparent border-none focus:ring-0 text-on-surface font-body-md p-md placeholder:text-on-surface-variant/50 resize-none"
+            className="w-full h-32 bg-transparent border-none focus:ring-0 text-white text-sm font-sans p-md placeholder:text-[#A1A1AA]/50 resize-none"
             placeholder="Tell others about your experience..."
           />
         </div>
@@ -178,12 +178,12 @@ export default function Feedback() {
           onClick={() => toast('Photo upload coming soon!')}
           className="w-full glass-card border-dashed border-2 border-white/20 p-lg rounded-xl flex flex-col items-center gap-sm group hover:border-secondary transition-all"
         >
-          <div className="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant group-hover:text-secondary group-hover:bg-secondary/10 transition-colors">
+          <div className="w-12 h-12 rounded-full bg-[#222222] flex items-center justify-center text-[#A1A1AA] group-hover:text-secondary group-hover:bg-secondary/10 transition-colors">
             <MdPhotoCamera className="text-[32px]" />
           </div>
           <div className="text-center">
-            <p className="font-label-md text-label-md text-on-surface">Upload your New Look</p>
-            <p className="font-caption text-caption text-on-surface-variant mt-1">
+            <p className="text-sm font-sans font-bold text-white">Upload your New Look</p>
+            <p className="font-caption text-caption text-[#A1A1AA] mt-1">
               Show off the results to the community
             </p>
           </div>
@@ -195,7 +195,7 @@ export default function Feedback() {
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="w-full bg-secondary-container text-on-secondary-container font-headline-md text-headline-md py-md rounded-xl shadow-warm-sm active:scale-95 transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-secondary-container text-on-secondary-container text-xl font-serif py-md rounded-xl shadow-[0_0_10px_rgba(228,181,108,0.2)] active:scale-95 transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {submitting ? (
             <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -205,7 +205,7 @@ export default function Feedback() {
         </button>
         <button
           onClick={handleSkip}
-          className="w-full text-on-surface-variant font-label-md py-base hover:text-on-surface transition-colors"
+          className="w-full text-[#A1A1AA] font-bold py-base hover:text-white transition-colors"
         >
           Skip for now
         </button>

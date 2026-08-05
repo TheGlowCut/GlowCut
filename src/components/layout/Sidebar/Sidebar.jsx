@@ -29,26 +29,26 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
   ];
 
   const sidebarContent = (
-    <div className="h-full bg-surface border-r border-primary/10 flex flex-col justify-between p-4 w-64">
+    <div className="h-full bg-[#111111] border-r border-white/5 flex flex-col justify-between p-4 w-64">
       <div className="space-y-8">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
             <div className="relative w-8 h-8 flex items-center justify-center">
-              <div className="absolute inset-0 bg-primary/20 rounded-full" />
-              <div className="absolute inset-0 border border-primary/40 rounded-full" />
-              <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+              <div className="absolute inset-0 bg-[#E4B56C]/20 rounded-full" />
+              <div className="absolute inset-0 border border-[#E4B56C]/40 rounded-full" />
+              <div className="w-1.5 h-1.5 bg-[#E4B56C] rounded-full" />
             </div>
-            <span className="text-xl font-black tracking-wider text-on-surface">
-              GLOW<span className="text-primary">CUT</span>
+            <span className="text-xl font-serif tracking-wider text-white">
+              GLOW<span className="text-[#E4B56C]">CUT</span>
             </span>
-            <span className="text-[9px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full uppercase font-bold">
+            <span className="text-[9px] bg-[#E4B56C]/10 text-[#E4B56C] border border-[#E4B56C]/20 px-2 py-0.5 rounded-full uppercase font-bold">
               Admin
             </span>
           </div>
           {/* Close button on mobile */}
           <button
             onClick={onClose}
-            className="lg:hidden p-1 rounded-full hover:bg-white/5 text-on-surface-variant"
+            className="lg:hidden p-1 rounded-full hover:bg-white/5 text-[#A1A1AA]"
             aria-label="Close sidebar"
           >
             <MdClose className="text-xl" />
@@ -64,8 +64,8 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-primary text-on-primary shadow-warm'
-                    : 'text-on-surface-variant hover:bg-primary/5 hover:text-primary'
+                    ? 'bg-[#E4B56C] text-black shadow-[0_0_20px_rgba(228,181,108,0.2)]'
+                    : 'text-[#A1A1AA] hover:bg-white/5 hover:text-white'
                 }`
               }
             >
@@ -78,7 +78,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
 
       <button
         onClick={() => { handleLogout(); onClose(); }}
-        className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm font-medium text-error hover:bg-error/10 transition-all active:scale-95"
+        className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm font-medium text-red-500 hover:bg-red-500/10 transition-all active:scale-95"
       >
         <MdLogout className="text-lg" />
         Logout

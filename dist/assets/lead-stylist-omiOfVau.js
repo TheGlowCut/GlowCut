@@ -1,0 +1,1 @@
+var e=`/assets/lead-stylist-BOgRtuH7.png`;export{e as t};

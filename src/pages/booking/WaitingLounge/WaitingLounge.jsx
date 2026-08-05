@@ -250,18 +250,20 @@ export default function WaitingLounge() {
 
   if (error || !liveBooking) {
     return (
-      <main className="min-h-[80vh] flex flex-col items-center justify-center pt-8 pb-xl px-margin-mobile md:px-margin-desktop max-w-[1440px] mx-auto">
-        <div className="bg-surface-container rounded-2xl p-xl max-w-lg text-center border border-white/10 shadow-soft">
-          <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-4">
-            <MdWarning className="text-primary text-4xl" />
+      <main className="glow-home min-h-[80vh] flex flex-col items-center justify-center bg-[#0a0a0a] px-4 md:px-8 max-w-[1440px] mx-auto">
+        <div className="bg-[#111111] rounded-[2rem] p-10 max-w-lg text-center border border-white/5 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[50%] bg-[#E4B56C]/10 blur-[80px] rounded-full pointer-events-none"></div>
+          
+          <div className="w-20 h-20 rounded-2xl bg-[#E4B56C]/10 flex items-center justify-center mx-auto mb-6 border border-[#E4B56C]/20">
+            <MdWarning className="text-[#E4B56C] text-4xl" />
           </div>
-          <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">Couldn't Find That Booking</h2>
-          <p className="text-on-surface-variant font-body-md mb-6 leading-relaxed">
+          <h2 className="text-3xl text-white font-serif mb-4 tracking-tight">Couldn't Find That Booking</h2>
+          <p className="text-[#A1A1AA] text-sm mb-8 leading-relaxed">
             Looks like this session expired or the booking ID isn't valid anymore. No worries — just grab a fresh slot and we'll get you sorted.
           </p>
           <button 
             onClick={() => navigate('/')}
-            className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold transition-all shadow-warm-sm hover:brightness-105 active:scale-95"
+            className="w-full bg-[#E4B56C] text-black py-4 rounded-full font-bold text-sm tracking-wide transition-all shadow-[0_0_20px_rgba(228,181,108,0.2)] hover:bg-[#cfa462] hover:shadow-[0_0_30px_rgba(228,181,108,0.4)] active:scale-95"
           >
             Book a New Appointment
           </button>

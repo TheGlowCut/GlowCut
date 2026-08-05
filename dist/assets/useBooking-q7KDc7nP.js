@@ -1,0 +1,1 @@
+import{a as e}from"./rolldown-runtime-CNC7AqOf.js";import{Un as t}from"./vendor-BB-zCLnP.js";import{n}from"./index-B_H3SuYv.js";var r=e(t(),1);function i(){let e=(0,r.useContext)(n);if(!e)throw Error(`useBooking must be used within a BookingProvider`);return e}export{i as t};

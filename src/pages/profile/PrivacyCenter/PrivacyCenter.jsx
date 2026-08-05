@@ -58,39 +58,39 @@ export default function PrivacyCenter() {
     <main className="relative pt-8 px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto pb-xl">
       {/* Header */}
       <div className="mb-xl text-center md:text-left">
-        <h1 className="font-display-lg text-display-lg mb-sm text-on-surface">
+        <h1 className="text-4xl font-serif mb-sm text-white">
           Legal &amp; Privacy Center
         </h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+        <p className="font-body-lg text-body-lg text-[#A1A1AA] max-w-2xl">
           Ensuring transparency, security, and digital integrity for every GlowCut experience.
           Review our standards of service and data governance.
         </p>
       </div>
 
       {/* Safe Container */}
-      <div className="rounded-xl p-base md:p-md bg-surface-container-lowest/40 backdrop-blur-md border border-secondary/20">
+      <div className="rounded-xl p-base md:p-md bg-[#0a0a0a]/40 backdrop-blur-md border border-secondary/20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
           {LEGAL_SECTIONS.map((section) => {
             const Icon = section.icon;
             return (
               <div
                 key={section.title}
-                className="glass-panel rounded-xl p-md flex flex-col justify-between group hover:border-secondary/40 transition-all duration-300"
+                className="bg-[#111111] rounded-xl p-md flex flex-col justify-between group hover:border-secondary/40 transition-all duration-300"
               >
                 <div>
                   <div className="mb-md">
                     <Icon className="text-secondary text-4xl drop-shadow-[0_0_4px_rgba(102,221,139,0.25)]" />
                   </div>
-                  <h2 className="font-headline-md text-headline-md mb-sm text-on-surface">
+                  <h2 className="text-xl font-serif mb-sm text-white">
                     {section.title}
                   </h2>
-                  <p className="font-body-md text-body-md text-on-surface-variant mb-md">
+                  <p className="text-sm font-sans text-[#A1A1AA] mb-md">
                     {section.summary}
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveSection(section)}
-                  className="w-fit font-label-md text-label-md px-md py-sm rounded-lg border border-secondary text-secondary hover:bg-secondary/10 transition-all"
+                  className="w-fit text-sm font-sans font-bold px-md py-sm rounded-lg border border-secondary text-secondary hover:bg-secondary/10 transition-all"
                 >
                   Read Full Version
                 </button>
@@ -106,7 +106,7 @@ export default function PrivacyCenter() {
             return (
               <div className="flex items-center gap-sm" key={badge.label}>
                 <Icon className="text-secondary" />
-                <span className="font-label-md text-label-md text-on-surface uppercase tracking-widest">
+                <span className="text-sm font-sans font-bold text-white uppercase tracking-widest">
                   {badge.label}
                 </span>
               </div>
@@ -122,7 +122,7 @@ export default function PrivacyCenter() {
         title={activeSection?.title}
         size="lg"
       >
-        <p className="text-on-surface-variant font-body-md leading-relaxed">
+        <p className="text-[#A1A1AA] text-sm font-sans leading-relaxed">
           {activeSection?.fullText}
         </p>
       </Modal>
