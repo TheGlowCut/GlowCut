@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Toaster } from 'react-hot-toast';
 import AppRoutes from './routes/AppRoutes';
+import ScrollToTop from './components/layout/ScrollToTop';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { BookingProvider } from './context/BookingContext';
@@ -47,6 +48,7 @@ export default function App() {
       <SocketProvider>
         <UserProvider>
           <BookingProvider>
+            <ScrollToTop />
             <AppRoutes />
             <ThemedToaster />
           </BookingProvider>
@@ -55,3 +57,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+
