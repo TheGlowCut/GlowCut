@@ -11,9 +11,9 @@ import {
   MdClose,
   MdPersonOutline
 } from 'react-icons/md';
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
 import AuthContext from '../../../context/AuthContext';
 import Avatar from '../../../components/ui/Avatar';
+import HomeFooter from '../../../components/layout/HomeFooter';
 import glowcutMark from '../../../assets/brand/glowcut-mark.png';
 import '../../../pages/home/Home/Home.css';
 
@@ -182,21 +182,9 @@ export default function PrivacyPolicy() {
 
       </div>
 
-      <footer className="home-footer" style={{ marginTop: 'auto' }}>
-        <div className="home-shell flex flex-col md:flex-row justify-between items-center py-8 border-t border-white/10 mt-12 gap-6">
-          <Brand />
-          
-          <div className="flex items-center gap-6 text-[#A1A1AA] text-xs">
-            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
-            <Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link>
-            <Link to="/careers" className="hover:text-white transition-colors">Careers</Link>
-          </div>
-        </div>
-        <div className="home-shell flex justify-between items-center pb-8">
-          <div className="text-[#A1A1AA] text-[10px]">© 2026 GlowCut Cyber-Chic Salons. All rights reserved.</div>
-        </div>
-      </footer>
+      <div style={{ marginTop: 'auto' }}>
+        <HomeFooter />
+      </div>
     </main>
   );
 }
