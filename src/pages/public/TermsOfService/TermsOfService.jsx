@@ -12,9 +12,9 @@ import {
   MdEdit,
   MdArticle
 } from 'react-icons/md';
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
 import AuthContext from '../../../context/AuthContext';
 import Avatar from '../../../components/ui/Avatar';
+import HomeFooter from '../../../components/layout/HomeFooter';
 import glowcutMark from '../../../assets/brand/glowcut-mark.png';
 import '../../../pages/home/Home/Home.css';
 
@@ -25,28 +25,6 @@ const NAV_LINKS = [
   { label: 'AI Scanner', to: '/ai/style-consultant' },
 ];
 
-const FOOTER_LINKS = {
-  Company: [
-    { label: 'About Us', to: '/about' },
-    { label: 'Careers', to: '/careers' },
-    { label: 'Privacy Policy', to: '/privacy-policy' },
-    { label: 'Terms and Conditions', to: '/terms-of-service' },
-  ],
-  Features: [
-    { label: 'Online Booking', to: '/services' },
-    { label: 'Sales & Payments', to: '/payments' },
-    { label: 'Marketing & Automation', to: '/marketing' },
-    { label: 'Reporting', to: '/reporting' },
-    { label: 'Mini-CRM', to: '/crm' },
-  ]
-};
-
-const socialLinks = [
-  { label: 'Facebook', icon: FaFacebookF },
-  { label: 'Instagram', icon: FaInstagram },
-  { label: 'X', icon: FaXTwitter },
-  { label: 'LinkedIn', icon: FaLinkedinIn },
-];
 
 function Brand() {
   return (
@@ -72,10 +50,6 @@ export default function TermsOfService() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const profileAvatar = profile?.profileImage || profile?.avatar;
-
-  const handleGetStarted = () => {
-    navigate('/auth/signup');
-  };
 
   return (
     <main className="glow-home flex flex-col min-h-screen font-sans">
@@ -225,39 +199,9 @@ export default function TermsOfService() {
         </div>
       </div>
 
-      <footer className="home-footer" style={{ marginTop: 'auto' }}>
-        <div className="home-shell">
-          <div className="home-footer-grid">
-            <div className="home-footer-cta">
-              <h2>Are you ready to<br/>get started?</h2>
-              <GoldButton onClick={handleGetStarted}>Get Started for free</GoldButton>
-            </div>
-
-            {Object.entries(FOOTER_LINKS).map(([title, links]) => (
-              <div className="home-footer-links" key={title}>
-                <h3>{title}</h3>
-                {links.map((link) => (
-                  <Link key={link.label} to={link.to}>
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          <div className="home-footer-bottom">
-            <Brand />
-            <div className="home-socials">
-              {socialLinks.map(({ label, icon: Icon }) => (
-                <a key={label} href="#" aria-label={label}>
-                  <Icon />
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="home-copyright">©2026 Glow&Cut<br/><br/>©2026 Glow&Cut</div>
-      </footer>
+      <div style={{ marginTop: 'auto' }}>
+        <HomeFooter />
+      </div>
     </main>
   );
 }

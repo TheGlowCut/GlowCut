@@ -39,10 +39,7 @@ export default function AdminLayout() {
       />
 
       <main className="lg:ml-64 min-h-screen">
-        <AdminHeader
-          title={title}
-          avatarSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuBNJaH3ty0k1DIfjl-VY4GvzwGr_vgAtyMLzIeZDNTb6eri4mpdrE3GSEe4yldLBIDruIrIIdkmSfhUPTtuVmhEQCg43SibgJixBbedYgRgNuJ0KOXRqIvm3nElmEqdkKhZ_s3vrFzu2upHF3inkzMx5fkoOQIqpRgwwmfoPHbRbAOnL2pFo2yHzD_hULivANKwoMFErEenyvS-c4CitLoCU7GLQNWmU83HVIh33EiIZntF1MLMj98hOyEW7s2e-vAsSALdZZFNRiw"
-        />
+        <AdminHeader title={title} />
         <motion.div
           className="p-3 sm:p-4 md:p-container-margin space-y-section-gap max-w-full overflow-x-hidden"
           initial={{ opacity: 0, y: 8 }}

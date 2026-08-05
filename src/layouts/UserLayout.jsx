@@ -49,6 +49,7 @@ export default function UserLayout() {
     pathname === '/privacy-policy' ||
     pathname === '/terms-of-service' ||
     pathname === '/careers' ||
+    pathname === '/contact-us' ||
     isSalonDetailRoute ||
     isBookingShowcaseRoute;
 
